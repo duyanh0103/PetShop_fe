@@ -1,0 +1,32 @@
+export const products = [
+  {
+    id: 1,
+    image: "https://placehold.co/60x60",
+    name: "Royal Canin Puppy",
+    sku: "RC001",
+    category: "Dog Food",
+    price: 450000,
+    stock: 24,
+    status: "ACTIVE",
+  },
+  {
+    id: 2,
+    image: "https://placehold.co/60x60",
+    name: "Whiskas Ocean Fish",
+    sku: "WK002",
+    category: "Cat Food",
+    price: 180000,
+    stock: 0,
+    status: "OUT_OF_STOCK",
+  },
+  {
+    id: 3,
+    image: "https://placehold.co/60x60",
+    name: "Pet Shampoo",
+    sku: "PS003",
+    category: "Accessories",
+    price: 250000,
+    stock: 15,
+    status: "ACTIVE",
+  },
+];

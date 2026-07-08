@@ -1,3 +1,7 @@
 export default function Orders() {
-  return <h1>Orders</h1>;
+  return (
+    <div className="text-2xl font-semibold">
+      Orders
+    </div>
+  );
 }

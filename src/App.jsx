@@ -1,7 +1,5 @@
+import AppRouter from "@/routes/AppRouter";
+
 export default function App() {
-  return (
-    <div className="p-10 text-4xl font-bold text-blue-600">
-      Tailwind OK
-    </div>
-  );
+  return <AppRouter />;
 }
