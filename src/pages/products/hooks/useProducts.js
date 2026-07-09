@@ -11,7 +11,7 @@ export default function useProducts() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
 
   useEffect(() => {
     let isMounted = true;
@@ -38,6 +38,12 @@ export default function useProducts() {
     };
   }, []);
 
+  const normalizeValue = (value) =>
+    String(value)
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+
   const filteredProducts = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
@@ -48,28 +54,55 @@ export default function useProducts() {
         product.sku.toLowerCase().includes(normalizedSearch);
 
       const matchesCategory =
-        selectedCategory === "all" || product.category === selectedCategory;
+        selectedCategory === "all" ||
+        normalizeValue(product.category) === normalizeValue(selectedCategory);
 
       const matchesStatus =
         selectedStatus === "all" ||
-        product.status.toLowerCase() === selectedStatus.toLowerCase();
+        normalizeValue(product.status) === normalizeValue(selectedStatus);
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [products, search, selectedCategory, selectedStatus]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const totalItems = filteredProducts.length;
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
 
   const paginatedProducts = useMemo(() => {
-    const safePage = Math.min(page, totalPages);
+    const safePage = totalPages === 0 ? 1 : Math.min(page, totalPages);
     const startIndex = (safePage - 1) * pageSize;
 
     return filteredProducts.slice(startIndex, startIndex + pageSize);
   }, [filteredProducts, page, pageSize, totalPages]);
 
+  const currentItems = paginatedProducts.length;
+  const safePage = totalPages === 0 ? 1 : Math.min(page, totalPages);
+  const startItem = totalItems === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const endItem = totalItems === 0 ? 0 : Math.min(safePage * pageSize, totalItems);
+
   useEffect(() => {
     setPage(1);
   }, [search, selectedCategory, selectedStatus]);
+
+  useEffect(() => {
+    if (totalPages === 0) {
+      setPage(1);
+      return;
+    }
+
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const setPageSize = (value) => {
+    const nextPageSize = Number(value);
+
+    if (!Number.isNaN(nextPageSize) && nextPageSize > 0) {
+      setPageSizeState(nextPageSize);
+      setPage(1);
+    }
+  };
 
   return {
     products,
@@ -82,9 +115,14 @@ export default function useProducts() {
     page,
     pageSize,
     totalPages,
+    totalItems,
+    currentItems,
+    startItem,
+    endItem,
     setSearch,
     setSelectedCategory,
     setSelectedStatus,
     setPage,
+    setPageSize,
   };
 }

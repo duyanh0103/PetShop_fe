@@ -13,10 +13,14 @@ export default function Products() {
     page,
     pageSize,
     totalPages,
+    totalItems,
+    startItem,
+    endItem,
     setSearch,
     setSelectedCategory,
     setSelectedStatus,
     setPage,
+    setPageSize,
   } = useProducts();
 
   const handleAddProduct = () => {
@@ -42,12 +46,19 @@ export default function Products() {
       ) : (
         <>
           <ProductTable products={paginatedProducts} />
-          <ProductPagination
-            currentPage={page}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            onPageChange={setPage}
-          />
+
+          {totalItems > 0 && (
+            <ProductPagination
+              page={page}
+              pageSize={pageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startItem={startItem}
+              endItem={endItem}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          )}
         </>
       )}
     </div>
