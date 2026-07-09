@@ -27,6 +27,6 @@ export const products = [
     category: "Accessories",
     price: 250000,
     stock: 15,
-    status: "ACTIVE",
+    status: "INACTIVE",
   },
 ];
