@@ -1,9 +1,13 @@
 import ProductToolbar from "./components/ProductToolbar";
 import ProductTable from "./components/ProductTable";
 import ProductPagination from "./components/ProductPagination";
+import ProductDialog from "./components/ProductDialog";
+import useProductDialog from "./hooks/useProductDialog";
 import useProducts from "./hooks/useProducts";
+import { defaultProductFormValues } from "./hooks/useProductForm";
 
 export default function Products() {
+  const { open, openDialog, closeDialog } = useProductDialog();
   const {
     paginatedProducts,
     loading,
@@ -23,8 +27,9 @@ export default function Products() {
     setPageSize,
   } = useProducts();
 
-  const handleAddProduct = () => {
-    // Placeholder for future add-product flow.
+  const handleSubmitProduct = async (data) => {
+    console.log(data);
+    closeDialog();
   };
 
   return (
@@ -36,7 +41,22 @@ export default function Products() {
         onSearchChange={(event) => setSearch(event.target.value)}
         onCategoryChange={(value) => setSelectedCategory(value)}
         onStatusChange={(value) => setSelectedStatus(value)}
-        onAddProduct={handleAddProduct}
+        onAddProduct={openDialog}
+      />
+
+      <ProductDialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (nextOpen) {
+            openDialog();
+            return;
+          }
+
+          closeDialog();
+        }}
+        defaultValues={defaultProductFormValues}
+        onSubmit={handleSubmitProduct}
+        loading={false}
       />
 
       {loading ? (
