@@ -24,12 +24,7 @@ export const productService = {
 
   async createProduct(data) {
     await delay();
-    const newProduct = normalizeProductPayload({
-      ...data,
-      id: Date.now(),
-    });
-
-    return Promise.resolve(newProduct);
+    return Promise.resolve(data);
   },
 
   async updateProduct(id, data) {
@@ -44,6 +39,7 @@ export const productService = {
       ...existingProduct,
       ...data,
       id: Number(id),
+      createdAt: existingProduct.createdAt ?? null,
     };
 
     return Promise.resolve(updatedProduct);
@@ -52,7 +48,7 @@ export const productService = {
   async deleteProduct(id) {
     await delay();
     return Promise.resolve(Boolean(mockProducts.find((item) => item.id === Number(id))));
-  },
+  },  
 };
 
 export default productService;

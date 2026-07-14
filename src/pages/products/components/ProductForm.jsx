@@ -7,6 +7,9 @@ export default function ProductForm({
   onSubmit,
   onCancel,
   loading = false,
+  products = [],
+  isEditMode = false,
+  submitLabel = "Save Product",
 }) {
   const {
     control,
@@ -21,6 +24,8 @@ export default function ProductForm({
     defaultValues,
     onSubmit,
     loading,
+    products,
+    isEditMode,
   });
 
   const isDisabled = loading;
@@ -36,9 +41,10 @@ export default function ProductForm({
         onImageChange={updateImageFile}
         onImageRemove={clearImageFile}
         disabled={isDisabled}
+        isEditMode={isEditMode}
       />
 
-      <ProductFormFooter onCancel={onCancel} loading={isDisabled} />
+      <ProductFormFooter onCancel={onCancel} loading={isDisabled} submitLabel={submitLabel} />
     </form>
   );
 }

@@ -2,58 +2,42 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const productFormSchema = z.object({
-  productName: z.string().trim().min(1, "Product Name is required"),
-  sku: z.string().trim().min(1, "SKU is required"),
-  category: z.string().trim().min(1, "Category is required"),
-  price: z.preprocess(
-    (value) => {
-      if (value === "" || value === null || value === undefined) {
-        return undefined;
+import productSchema from "@/pages/products/schemas/productSchema";
+import { generateSku } from "@/pages/products/utils/generateSku";
+
+function createProductFormSchema(products = [], currentProductId = null) {
+  return productSchema.superRefine((value, context) => {
+    const normalizedSku = String(value.sku ?? "").trim().toUpperCase();
+
+    if (normalizedSku !== value.sku) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["sku"],
+        message: "SKU must be uppercase",
+      });
+    }
+
+    const isDuplicate = products.some((product) => {
+      if (!product?.sku) {
+        return false;
       }
 
-      if (typeof value === "string") {
-        const normalized = value.replace(/,/g, "");
-        const parsed = Number(normalized);
-        return Number.isNaN(parsed) ? undefined : parsed;
+      if (currentProductId && Number(product.id) === Number(currentProductId)) {
+        return false;
       }
 
-      return value;
-    },
-    z
-      .number({
-        required_error: "Price is required",
-        invalid_type_error: "Price must be a number",
-      })
-      .min(0, "Price must be greater than or equal to 0")
-  ),
-  stock: z.preprocess(
-    (value) => {
-      if (value === "" || value === null || value === undefined) {
-        return undefined;
-      }
+      return String(product.sku).toUpperCase() === normalizedSku;
+    });
 
-      if (typeof value === "string") {
-        const parsed = Number(value);
-        return Number.isNaN(parsed) ? undefined : parsed;
-      }
-
-      return value;
-    },
-    z
-      .number({
-        required_error: "Stock is required",
-        invalid_type_error: "Stock must be a number",
-      })
-      .int("Stock must be a whole number")
-      .min(0, "Stock must be greater than or equal to 0")
-  ),
-  description: z.string().trim().optional().or(z.literal("")),
-  status: z.enum(["ACTIVE", "INACTIVE", "OUT_OF_STOCK"], {
-    required_error: "Status is required",
-  }),
-  imageFile: z.any().nullable().optional(),
-});
+    if (isDuplicate) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["sku"],
+        message: "SKU already exists.",
+      });
+    }
+  });
+}
 
 const defaultProductFormValues = {
   productName: "",
@@ -135,6 +119,8 @@ export function useProductForm({
   defaultValues,
   onSubmit,
   loading = false,
+  products = [],
+  isEditMode = false,
 }) {
   const normalizedDefaultValues = useMemo(
     () => normalizeDefaultValues(defaultValues),
@@ -145,13 +131,19 @@ export function useProductForm({
     [normalizedDefaultValues]
   );
 
+  const currentProductId = defaultValues?.id ?? null;
+  const productFormSchema = useMemo(
+    () => createProductFormSchema(products, currentProductId),
+    [products, currentProductId]
+  );
+
   const form = useForm({
     resolver: zodResolver(productFormSchema),
     defaultValues: normalizedDefaultValues,
     mode: "onTouched",
   });
 
-  const { reset, setValue, handleSubmit, control, register, formState } = form;
+  const { reset, setValue, handleSubmit, control, register, formState, watch } = form;
   const [imagePreview, setImagePreview] = useState(
     getImagePreview(defaultValues)
   );
@@ -168,6 +160,28 @@ export function useProductForm({
       objectUrlRef.current = "";
     }
   }, [defaultValuesKey, defaultValues, normalizedDefaultValues, reset]);
+
+  const categoryValue = watch("category");
+  const skuValue = watch("sku");
+
+  useEffect(() => {
+    if (isEditMode) {
+      return;
+    }
+
+    if (skuValue && skuValue.trim().length > 0) {
+      return;
+    }
+
+    const suggestedSku = generateSku(categoryValue, products);
+
+    if (suggestedSku) {
+      setValue("sku", suggestedSku, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [categoryValue, isEditMode, products, setValue, skuValue]);
 
   useEffect(() => {
     return () => {
@@ -195,7 +209,7 @@ export function useProductForm({
       return;
     }
 
-    setImagePreview("");
+    setImagePreview(getImagePreview(defaultValues));
   };
 
   const clearImageFile = () => {
@@ -203,7 +217,12 @@ export function useProductForm({
   };
 
   const submitHandler = handleSubmit(async (values) => {
-    await onSubmit?.(values);
+    const normalizedValues = {
+      ...values,
+      sku: String(values.sku ?? "").trim().toUpperCase(),
+    };
+
+    await onSubmit?.(normalizedValues);
   });
 
   return {
@@ -219,4 +238,4 @@ export function useProductForm({
   };
 }
 
-export { defaultProductFormValues, productFormSchema };
+export { defaultProductFormValues };

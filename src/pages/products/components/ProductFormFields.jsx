@@ -34,10 +34,7 @@ function FieldError({ message }) {
 
 function FormLabel({ children, htmlFor, required = false }) {
   return (
-    <label
-      htmlFor={htmlFor}
-      className="text-sm font-medium text-foreground"
-    >
+    <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
       {children}
       {required ? <span className="ml-1 text-destructive">*</span> : null}
     </label>
@@ -45,27 +42,18 @@ function FormLabel({ children, htmlFor, required = false }) {
 }
 
 function PriceField({ control, disabled, error }) {
-  const formatPrice = (value) => {
-    if (value === null || value === undefined || value === "") {
-      return "";
-    }
+  const parsePrice = (value) => {
+    const cleaned = value.replace(/[^\d]/g, "");
 
-    const numericValue = Number(value);
+    if (!cleaned) return "";
 
-    if (Number.isNaN(numericValue)) {
-      return "";
-    }
-
-    return new Intl.NumberFormat("vi-VN").format(numericValue);
+    return parseInt(cleaned, 10);
   };
 
-  const parsePrice = (value) => {
-    if (value === "") {
-      return "";
-    }
+  const formatPrice = (value) => {
+    if (value === "" || value == null) return "";
 
-    const numericValue = Number(String(value).replace(/,/g, ""));
-    return Number.isNaN(numericValue) ? "" : numericValue;
+    return new Intl.NumberFormat("vi-VN").format(value);
   };
 
   return (
@@ -80,7 +68,7 @@ function PriceField({ control, disabled, error }) {
           <Input
             id="product-price"
             type="text"
-            inputMode="decimal"
+            inputMode="numeric"
             placeholder="0"
             value={formatPrice(field.value)}
             onChange={(event) => field.onChange(parsePrice(event.target.value))}
@@ -145,6 +133,7 @@ export default function ProductFormFields({
   onImageChange,
   onImageRemove,
   disabled = false,
+  isEditMode = false,
 }) {
   return (
     <div className="space-y-6">
@@ -172,7 +161,8 @@ export default function ProductFormFields({
             id="product-sku"
             type="text"
             placeholder="Enter SKU"
-            disabled={disabled}
+            disabled={disabled || isEditMode}
+            readOnly={isEditMode}
             aria-invalid={Boolean(errors.sku)}
             {...register("sku")}
           />

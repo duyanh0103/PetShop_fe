@@ -33,7 +33,7 @@ function getStatusText(status) {
   return status;
 }
 
-export default function ProductTable({ products }) {
+export default function ProductTable({ products, onEdit, onDelete }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
       <Table>
@@ -80,10 +80,18 @@ export default function ProductTable({ products }) {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <button className="rounded-md p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">
+                    <button
+                      type="button"
+                      className="rounded-md p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                      onClick={() => onEdit?.(product)}
+                    >
                       <Edit3 className="h-4 w-4" />
                     </button>
-                    <button className="rounded-md p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">
+                    <button
+                      type="button"
+                      className="rounded-md p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                      onClick={() => onDelete?.(product)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

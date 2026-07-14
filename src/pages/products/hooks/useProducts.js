@@ -124,5 +124,6 @@ export default function useProducts() {
     setSelectedStatus,
     setPage,
     setPageSize,
+    setProducts,
   };
 }

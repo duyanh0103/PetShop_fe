@@ -14,12 +14,18 @@ export default function ProductDialog({
   defaultValues,
   onSubmit,
   loading = false,
+  products = [],
+  mode = "create",
+  submitLabel = "Save Product",
 }) {
+  const isEditMode = mode === "edit";
+  const title = isEditMode ? "Edit Product" : "Add Product";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader className="pr-8 text-left">
-          <DialogTitle>Add Product</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             Fill in product information below.
           </DialogDescription>
@@ -31,6 +37,9 @@ export default function ProductDialog({
           onSubmit={onSubmit}
           onCancel={() => onOpenChange?.(false)}
           loading={loading}
+          products={products}
+          isEditMode={isEditMode}
+          submitLabel={submitLabel}
         />
       </DialogContent>
     </Dialog>
