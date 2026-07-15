@@ -47,7 +47,17 @@ export const productService = {
 
   async deleteProduct(id) {
     await delay();
-    return Promise.resolve(Boolean(mockProducts.find((item) => item.id === Number(id))));
+    const idx = mockProducts.findIndex((item) => item.id === Number(id));
+
+    if (idx === -1) {
+      return Promise.resolve(null);
+    }
+
+    // remove the product from the in-memory list (mock)
+    const [removed] = mockProducts.splice(idx, 1);
+
+    // return removed id for confirmation
+    return Promise.resolve(removed.id);
   },  
 };
 

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 
 import productService from "../services/productService";
 
-export default function useProductMutations({ setProducts }) {
+export default function useProductMutations({ setProducts, page, setPage, pageSize }) {
   const createProduct = useCallback(
     async (product) => {
       const normalizedProduct = {
@@ -57,9 +57,23 @@ export default function useProductMutations({ setProducts }) {
     [setProducts]
   );
 
-  const deleteProduct = useCallback(async () => {
-    return Promise.resolve(null);
-  }, []);
+  const deleteProduct = useCallback(
+    async (id) => {
+      const deletedId = await productService.deleteProduct(id);
+
+      if (!deletedId) return null;
+
+      if (typeof setProducts === "function") {
+        setProducts((currentProducts) => currentProducts.filter((currentProduct) => currentProduct.id !== id));
+      }
+
+      // Pagination adjustments are handled by the `useProducts` hook which
+      // recalculates total pages and clamps the current page when `products` changes.
+
+      return deletedId;
+    },
+    [setProducts, setPage, page]
+  );
 
   return {
     createProduct,

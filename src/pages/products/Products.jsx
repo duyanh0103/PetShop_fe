@@ -4,6 +4,7 @@ import ProductToolbar from "./components/ProductToolbar";
 import ProductTable from "./components/ProductTable";
 import ProductPagination from "./components/ProductPagination";
 import ProductDialog from "./components/ProductDialog";
+import ProductDeleteDialog from "./components/ProductDeleteDialog";
 import useProductDialog from "./hooks/useProductDialog";
 import useProducts from "./hooks/useProducts";
 import useProductMutations from "./hooks/useProductMutations";
@@ -19,6 +20,8 @@ export default function Products() {
   const mutations = useProductMutations({
     products: productsQuery.products,
     setProducts: productsQuery.setProducts,
+    page: productsQuery.page,
+    setPage: productsQuery.setPage,
   });
   const {
     products,
@@ -39,6 +42,9 @@ export default function Products() {
     setPage,
     setPageSize,
   } = productsQuery;
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedToDelete, setSelectedToDelete] = useState(null);
 
   const handleSubmitProduct = async (data) => {
     try {
@@ -136,7 +142,34 @@ export default function Products() {
           <ProductTable
             products={paginatedProducts}
             onEdit={openEditDialog}
-            onDelete={() => {}}
+            onDelete={(product) => {
+              setSelectedToDelete(product);
+              setDeleteDialogOpen(true);
+            }}
+          />
+
+          <ProductDeleteDialog
+            open={deleteDialogOpen}
+            onOpenChange={(nextOpen) => {
+              setDeleteDialogOpen(nextOpen);
+              if (!nextOpen) setSelectedToDelete(null);
+            }}
+            product={selectedToDelete}
+            onConfirm={async (id) => {
+              try {
+                setSubmitting(true);
+                const deleted = await mutations.deleteProduct(id);
+
+                if (deleted) {
+                  toast({ title: "Product deleted successfully." });
+                }
+              } finally {
+                setSubmitting(false);
+                setDeleteDialogOpen(false);
+                setSelectedToDelete(null);
+              }
+            }}
+            loading={submitting}
           />
 
           {totalItems > 0 && (
