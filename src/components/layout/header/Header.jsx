@@ -7,7 +7,7 @@ import { sidebarMenu } from "@/data/menu";
 import ThemeToggle from "./ThemeToggle";
 import UserMenu from "./UserMenu";
 
-export default function Header() {
+export default function Header({ onToggleSidebar, isSidebarCollapsed }) {
   const { pathname } = useLocation();
 
   const currentMenu = sidebarMenu.find((item) => item.path === pathname);
@@ -18,7 +18,12 @@ export default function Header() {
     <header className="flex h-16 items-center justify-between border-b bg-background px-6">
       {/* Left */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleSidebar}
+          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
           <Menu className="h-5 w-5" />
         </Button>
 
