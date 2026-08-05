@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/tooltip";
 import { sidebarMenu } from "@/data/menu";
 import { cn } from "@/lib/utils";
-
-// giả lập user role (sau này lấy từ store/JWT)
-const currentUserRole = "ADMIN";
+import useAuthStore from "@/store/authStore";
 
 export default function Sidebar({ isCollapsed = false, onToggleCollapse }) {
+  const currentUserRole = useAuthStore((state) => state.user?.role);
+
   const filteredMenu = sidebarMenu.filter((item) => {
     if (!item.roles) return true;
     return item.roles.includes(currentUserRole);

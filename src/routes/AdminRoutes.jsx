@@ -13,6 +13,7 @@ import Reports from "@/pages/reports/Reports";
 import Settings from "@/pages/settings/Settings";
 
 import NotFound from "./NotFound";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function AdminRoutes() {
   return (
@@ -22,7 +23,14 @@ export default function AdminRoutes() {
       <Route element={<AdminLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/products" element={<Products />} />
-        <Route path="/categories" element={<Categories />} />
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+              <Categories />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/orders" element={<Orders />} />
         <Route path="/customers" element={<Customers />} />
         <Route path="/reviews" element={<Reviews />} />

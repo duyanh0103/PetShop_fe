@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import productSchema from "@/pages/products/schemas/productSchema";
 import { generateSku } from "@/pages/products/utils/generateSku";
+import { zodResolver } from "@/lib/zodResolver";
 
 function createProductFormSchema(products = [], currentProductId = null) {
   return productSchema.superRefine((value, context) => {
@@ -49,39 +50,6 @@ const defaultProductFormValues = {
   status: "ACTIVE",
   imageFile: null,
 };
-
-function zodResolver(schema) {
-  return async (values) => {
-    const result = schema.safeParse(values);
-
-    if (result.success) {
-      return {
-        values: result.data,
-        errors: {},
-      };
-    }
-
-    const errors = result.error.issues.reduce((accumulator, issue) => {
-      const path = issue.path.join(".");
-
-      if (!path || accumulator[path]) {
-        return accumulator;
-      }
-
-      accumulator[path] = {
-        type: issue.code,
-        message: issue.message,
-      };
-
-      return accumulator;
-    }, {});
-
-    return {
-      values: {},
-      errors,
-    };
-  };
-}
 
 function parseNumericValue(value) {
   if (value === null || value === undefined || value === "") {
