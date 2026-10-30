@@ -1,7 +1,7 @@
 export default function Reports() {
   return (
     <div className="text-2xl font-semibold">
-      Reports
+      Báo cáo
     </div>
   );
 }

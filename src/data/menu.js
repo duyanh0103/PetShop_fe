@@ -12,71 +12,71 @@ import {
 
 export const sidebarMenu = [
   {
-    title: "Dashboard",
+    title: "Tổng quan",
     path: "/dashboard",
     icon: LayoutDashboard,
     roles: ["SUPER_ADMIN", "ADMIN", "STAFF"],
-    group: "MAIN",
+    group: "CHÍNH",
   },
 
   {
-    title: "Products",
+    title: "Sản phẩm",
     path: "/products",
     icon: Package,
     roles: ["SUPER_ADMIN", "ADMIN", "STAFF"],
-    group: "MANAGEMENT",
+    group: "QUẢN LÝ",
   },
   {
-    title: "Categories",
+    title: "Danh mục",
     path: "/categories",
     icon: FolderTree,
     roles: ["SUPER_ADMIN", "ADMIN"],
-    group: "MANAGEMENT",
+    group: "QUẢN LÝ",
   },
 
   {
-    title: "Orders",
+    title: "Đơn hàng",
     path: "/orders",
     icon: ShoppingCart,
     roles: ["SUPER_ADMIN", "ADMIN", "STAFF"],
-    group: "SALES",
+    group: "BÁN HÀNG",
   },
   {
-    title: "Customers",
+    title: "Khách hàng",
     path: "/customers",
     icon: Users,
     roles: ["SUPER_ADMIN", "ADMIN"],
-    group: "SALES",
+    group: "BÁN HÀNG",
   },
 
   {
-    title: "Reviews",
+    title: "Đánh giá",
     path: "/reviews",
     icon: Star,
     roles: ["SUPER_ADMIN", "ADMIN"],
-    group: "MARKETING",
+    group: "TIẾP THỊ",
   },
   {
-    title: "Coupons",
+    title: "Mã giảm giá",
     path: "/coupons",
     icon: TicketPercent,
     roles: ["SUPER_ADMIN", "ADMIN"],
-    group: "MARKETING",
+    group: "TIẾP THỊ",
   },
 
   {
-    title: "Reports",
+    title: "Báo cáo",
     path: "/reports",
     icon: ChartColumn,
     roles: ["SUPER_ADMIN", "ADMIN"],
-    group: "ANALYTICS",
+    group: "PHÂN TÍCH",
   },
 
   {
-    title: "Settings",
+    title: "Cài đặt",
     path: "/settings",
     icon: Settings,
     roles: ["SUPER_ADMIN", "ADMIN"],
-    group: "SYSTEM",
+    group: "HỆ THỐNG",
   },
 ];

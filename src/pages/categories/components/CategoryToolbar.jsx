@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/select";
 
 const statusOptions = [
-  { label: "All Status", value: "all" },
-  { label: "Active", value: "true" },
-  { label: "Inactive", value: "false" },
+  { label: "Tất cả trạng thái", value: "all" },
+  { label: "Hoạt động", value: "true" },
+  { label: "Ngừng hoạt động", value: "false" },
 ];
 
 export default function CategoryToolbar({
@@ -28,10 +28,10 @@ export default function CategoryToolbar({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-tight text-foreground">
-            Categories
+            Danh mục
           </h2>
           <p className="text-sm text-muted-foreground">
-            Manage product categories in your store
+            Quản lý danh mục sản phẩm trong cửa hàng của bạn
           </p>
         </div>
 
@@ -41,7 +41,7 @@ export default function CategoryToolbar({
           className="h-10 gap-2 self-start lg:self-auto"
         >
           <Plus className="size-4" />
-          Add Category
+          Thêm danh mục
         </Button>
       </div>
 
@@ -51,14 +51,14 @@ export default function CategoryToolbar({
             type="search"
             value={search}
             onChange={onSearchChange}
-            placeholder="Search category..."
+            placeholder="Tìm kiếm danh mục..."
             className="h-10 w-full"
           />
         </div>
 
         <Select value={isActive} onValueChange={onIsActiveChange}>
           <SelectTrigger className="h-10 w-full md:w-[180px]">
-            <SelectValue placeholder="All Status" />
+            <SelectValue placeholder="Tất cả trạng thái" />
           </SelectTrigger>
           <SelectContent>
             {statusOptions.map((option) => (

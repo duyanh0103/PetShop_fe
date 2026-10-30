@@ -8,6 +8,7 @@ export default function ProductForm({
   onCancel,
   loading = false,
   products = [],
+  categories = [],
   isEditMode = false,
   submitLabel = "Save Product",
 }) {
@@ -16,15 +17,12 @@ export default function ProductForm({
     register,
     formState: { errors },
     handleSubmit,
-    imagePreview,
-    imageResetToken,
-    updateImageFile,
-    clearImageFile,
   } = useProductForm({
     defaultValues,
     onSubmit,
     loading,
     products,
+    categories,
     isEditMode,
   });
 
@@ -36,10 +34,7 @@ export default function ProductForm({
         control={control}
         register={register}
         errors={errors}
-        imagePreview={imagePreview}
-        imageResetToken={imageResetToken}
-        onImageChange={updateImageFile}
-        onImageRemove={clearImageFile}
+        categories={categories}
         disabled={isDisabled}
         isEditMode={isEditMode}
       />

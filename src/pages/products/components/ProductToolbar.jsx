@@ -10,24 +10,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const categoryOptions = [
-  { label: "All Categories", value: "all" },
-  { label: "Dog Food", value: "dog-food" },
-  { label: "Cat Food", value: "cat-food" },
-  { label: "Accessories", value: "accessories" },
-];
-
 const statusOptions = [
-  { label: "All Status", value: "all" },
-  { label: "Active", value: "active" },
-  { label: "Inactive", value: "inactive" },
-  { label: "Out of Stock", value: "out-of-stock" },
+  { label: "Tất cả trạng thái", value: "all" },
+  { label: "Hoạt động", value: "true" },
+  { label: "Ngừng hoạt động", value: "false" },
 ];
 
 export default function ProductToolbar({
   search = "",
   category = "all",
   status = "all",
+  categories = [],
   onSearchChange,
   onCategoryChange,
   onStatusChange,
@@ -38,10 +31,10 @@ export default function ProductToolbar({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-tight text-foreground">
-            Products
+            Sản phẩm
           </h2>
           <p className="text-sm text-muted-foreground">
-            Manage all products in your store
+            Quản lý tất cả sản phẩm trong cửa hàng của bạn
           </p>
         </div>
 
@@ -51,7 +44,7 @@ export default function ProductToolbar({
           className="h-10 gap-2 self-start lg:self-auto"
         >
           <Plus className="size-4" />
-          Add Product
+          Thêm sản phẩm
         </Button>
       </div>
 
@@ -61,19 +54,20 @@ export default function ProductToolbar({
             type="search"
             value={search}
             onChange={onSearchChange}
-            placeholder="Search product..."
+            placeholder="Tìm kiếm sản phẩm hoặc SKU..."
             className="h-10 w-full"
           />
         </div>
 
         <Select value={category} onValueChange={onCategoryChange}>
           <SelectTrigger className="h-10 w-full md:w-[180px]">
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder="Tất cả danh mục" />
           </SelectTrigger>
           <SelectContent>
-            {categoryOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
+            <SelectItem value="all">Tất cả danh mục</SelectItem>
+            {categories.map((option) => (
+              <SelectItem key={option.id} value={option.id}>
+                {option.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -81,7 +75,7 @@ export default function ProductToolbar({
 
         <Select value={status} onValueChange={onStatusChange}>
           <SelectTrigger className="h-10 w-full md:w-[180px]">
-            <SelectValue placeholder="All Status" />
+            <SelectValue placeholder="Tất cả trạng thái" />
           </SelectTrigger>
           <SelectContent>
             {statusOptions.map((option) => (

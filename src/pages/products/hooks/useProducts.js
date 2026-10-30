@@ -1,99 +1,63 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import productService from "../services/productService";
+import useDebouncedValue from "@/hooks/useDebouncedValue";
 
 const DEFAULT_PAGE_SIZE = 10;
 
+/**
+ * Server-driven list state for the Product admin page: pagination, search
+ * (name + SKU), categoryId filter, isActive filter and sort are all
+ * delegated to the backend.
+ */
 export default function useProducts() {
   const [products, setProducts] = useState([]);
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [isActive, setIsActive] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
+  const [sortBy] = useState("createdAt");
+  const [sortDir] = useState("desc");
+
+  const debouncedSearch = useDebouncedValue(search, 400);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const result = await productService.getProducts({
+        page,
+        limit: pageSize,
+        search: debouncedSearch,
+        categoryId: selectedCategory,
+        isActive,
+        sortBy,
+        sortDir,
+      });
+
+      setProducts(result.items);
+      setPagination(result.pagination);
+    } catch (err) {
+      setError(err.response?.data?.message ?? "Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, pageSize, debouncedSearch, selectedCategory, isActive, sortBy, sortDir]);
 
   useEffect(() => {
-    let isMounted = true;
+    fetchProducts();
+  }, [fetchProducts]);
 
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const result = await productService.getProducts();
-
-        if (isMounted) {
-          setProducts(result);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadProducts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const normalizeValue = (value) =>
-    String(value)
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "");
-
-  const filteredProducts = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return products.filter((product) => {
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        product.name.toLowerCase().includes(normalizedSearch) ||
-        product.sku.toLowerCase().includes(normalizedSearch);
-
-      const matchesCategory =
-        selectedCategory === "all" ||
-        normalizeValue(product.category) === normalizeValue(selectedCategory);
-
-      const matchesStatus =
-        selectedStatus === "all" ||
-        normalizeValue(product.status) === normalizeValue(selectedStatus);
-
-      return matchesSearch && matchesCategory && matchesStatus;
-    });
-  }, [products, search, selectedCategory, selectedStatus]);
-
-  const totalItems = filteredProducts.length;
-  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
-
-  const paginatedProducts = useMemo(() => {
-    const safePage = totalPages === 0 ? 1 : Math.min(page, totalPages);
-    const startIndex = (safePage - 1) * pageSize;
-
-    return filteredProducts.slice(startIndex, startIndex + pageSize);
-  }, [filteredProducts, page, pageSize, totalPages]);
-
-  const currentItems = paginatedProducts.length;
-  const safePage = totalPages === 0 ? 1 : Math.min(page, totalPages);
-  const startItem = totalItems === 0 ? 0 : (safePage - 1) * pageSize + 1;
-  const endItem = totalItems === 0 ? 0 : Math.min(safePage * pageSize, totalItems);
-
+  // Any filter/search change should reset back to page 1.
   useEffect(() => {
     setPage(1);
-  }, [search, selectedCategory, selectedStatus]);
-
-  useEffect(() => {
-    if (totalPages === 0) {
-      setPage(1);
-      return;
-    }
-
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
+  }, [debouncedSearch, selectedCategory, isActive]);
 
   const setPageSize = (value) => {
     const nextPageSize = Number(value);
@@ -104,26 +68,29 @@ export default function useProducts() {
     }
   };
 
+  const total = pagination.total ?? 0;
+  const totalPages = pagination.totalPages ?? 1;
+  const startItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endItem = total === 0 ? 0 : Math.min(page * pageSize, total);
+
   return {
     products,
-    filteredProducts,
-    paginatedProducts,
     loading,
+    error,
     search,
     selectedCategory,
-    selectedStatus,
+    isActive,
     page,
     pageSize,
     totalPages,
-    totalItems,
-    currentItems,
+    totalItems: total,
     startItem,
     endItem,
     setSearch,
     setSelectedCategory,
-    setSelectedStatus,
+    setIsActive,
     setPage,
     setPageSize,
-    setProducts,
+    refetch: fetchProducts,
   };
 }

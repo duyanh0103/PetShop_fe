@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ImageUrlField from "@/components/common/ImageUrlField";
 
 function FieldError({ message }) {
   if (!message) return null;
@@ -35,12 +36,12 @@ export default function CategoryFormFields({
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="space-y-2">
           <FormLabel htmlFor="category-name" required>
-            Category Name
+            Tên danh mục
           </FormLabel>
           <Input
             id="category-name"
             type="text"
-            placeholder="e.g. Dog Food"
+            placeholder="VD: Thức ăn cho chó"
             disabled={disabled}
             aria-invalid={Boolean(errors.name)}
             {...register("name")}
@@ -53,7 +54,7 @@ export default function CategoryFormFields({
           <Input
             id="category-slug"
             type="text"
-            placeholder="auto-generated-from-name"
+            placeholder="tự-động-sinh-từ-tên"
             disabled={disabled}
             aria-invalid={Boolean(errors.slug)}
             {...register("slug")}
@@ -65,7 +66,7 @@ export default function CategoryFormFields({
         </div>
 
         <div className="space-y-2">
-          <FormLabel htmlFor="category-sort-order">Sort Order</FormLabel>
+          <FormLabel htmlFor="category-sort-order">Thứ tự sắp xếp</FormLabel>
           <Input
             id="category-sort-order"
             type="number"
@@ -83,44 +84,40 @@ export default function CategoryFormFields({
           name="isActive"
           render={({ field }) => (
             <div className="space-y-2">
-              <FormLabel htmlFor="category-status">Status</FormLabel>
+              <FormLabel htmlFor="category-status">Trạng thái</FormLabel>
               <Select
                 value={field.value ? "true" : "false"}
                 onValueChange={(value) => field.onChange(value === "true")}
                 disabled={disabled}
               >
                 <SelectTrigger id="category-status" className="h-10 w-full">
-                  <SelectValue placeholder="Choose status" />
+                  <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="true">Active</SelectItem>
-                  <SelectItem value="false">Inactive</SelectItem>
+                  <SelectItem value="true">Hoạt động</SelectItem>
+                  <SelectItem value="false">Ngừng hoạt động</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           )}
         />
 
-        <div className="space-y-2 lg:col-span-2">
-          <FormLabel htmlFor="category-image-url">Image URL</FormLabel>
-          <Input
+        <div className="lg:col-span-2">
+          <ImageUrlField
+            control={control}
             id="category-image-url"
-            type="text"
-            placeholder="https://..."
+            error={errors.imageUrl}
             disabled={disabled}
-            aria-invalid={Boolean(errors.imageUrl)}
-            {...register("imageUrl")}
           />
-          <FieldError message={errors.imageUrl?.message} />
         </div>
       </div>
 
       <div className="space-y-2">
-        <FormLabel htmlFor="category-description">Description</FormLabel>
+        <FormLabel htmlFor="category-description">Mô tả</FormLabel>
         <textarea
           id="category-description"
           rows={4}
-          placeholder="Write a short category description"
+          placeholder="Nhập mô tả ngắn cho danh mục"
           disabled={disabled}
           aria-invalid={Boolean(errors.description)}
           className="flex min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"

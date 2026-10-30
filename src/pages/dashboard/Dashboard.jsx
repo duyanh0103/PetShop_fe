@@ -19,11 +19,11 @@ function DashboardHeader() {
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-600">PetShop Admin</p>
-        <h1 className="mt-2 text-3xl font-semibold text-slate-900">Welcome back, Ben!</h1>
-        <p className="mt-2 text-sm text-slate-500">Here is your overview for today’s store performance.</p>
+        <h1 className="mt-2 text-3xl font-semibold text-slate-900">Chào mừng trở lại, Ben!</h1>
+        <p className="mt-2 text-sm text-slate-500">Đây là tổng quan hiệu suất cửa hàng hôm nay.</p>
       </div>
       <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
-        Export Report
+        Xuất báo cáo
       </button>
     </div>
   );

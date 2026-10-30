@@ -38,7 +38,7 @@ export default function Login() {
       navigate(redirectTo, { replace: true });
     } catch (error) {
       setServerError(
-        error.response?.data?.message ?? "Login failed. Please try again."
+        error.response?.data?.message ?? "Đăng nhập thất bại. Vui lòng thử lại."
       );
     }
   };
@@ -54,20 +54,20 @@ export default function Login() {
             PetShop Admin
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Sign in to manage your store
+            Đăng nhập để quản lý cửa hàng của bạn
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="space-y-2">
             <label htmlFor="username" className="text-sm font-medium text-slate-900">
-              Username
+              Tên đăng nhập
             </label>
             <Input
               id="username"
               type="text"
               autoComplete="username"
-              placeholder="Enter your username"
+              placeholder="Nhập tên đăng nhập"
               aria-invalid={Boolean(errors.username)}
               {...register("username")}
             />
@@ -78,13 +78,13 @@ export default function Login() {
 
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium text-slate-900">
-              Password
+              Mật khẩu
             </label>
             <Input
               id="password"
               type="password"
               autoComplete="current-password"
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu"
               aria-invalid={Boolean(errors.password)}
               {...register("password")}
             />
@@ -100,7 +100,7 @@ export default function Login() {
           ) : null}
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Signing in..." : "Sign in"}
+            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
           </Button>
         </form>
       </div>

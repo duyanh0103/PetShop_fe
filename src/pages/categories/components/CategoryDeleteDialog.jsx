@@ -14,12 +14,12 @@ export default function CategoryDeleteDialog({
       <AlertDialogPrimitive.Portal>
         <AlertDialogPrimitive.Overlay className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-[2px]" />
         <AlertDialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-[min(96%,28rem)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-white p-6 shadow-xl">
-          <AlertDialogPrimitive.Title className="text-lg font-semibold text-foreground">Delete Category</AlertDialogPrimitive.Title>
+          <AlertDialogPrimitive.Title className="text-lg font-semibold text-foreground">Xóa danh mục</AlertDialogPrimitive.Title>
 
           <AlertDialogPrimitive.Description className="mt-2 text-sm text-muted-foreground">
-            Are you sure you want to delete "{category?.name}"?
+            Bạn có chắc chắn muốn xóa "{category?.name}"?
             <br />
-            This action cannot be undone.
+            Hành động này không thể hoàn tác.
           </AlertDialogPrimitive.Description>
 
           {errorMessage ? (
@@ -30,7 +30,7 @@ export default function CategoryDeleteDialog({
 
           <div className="mt-6 flex justify-end gap-3">
             <AlertDialogPrimitive.Cancel asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">Hủy</Button>
             </AlertDialogPrimitive.Cancel>
 
             <AlertDialogPrimitive.Action asChild>
@@ -39,7 +39,7 @@ export default function CategoryDeleteDialog({
                 onClick={() => onConfirm?.(category?.id)}
                 disabled={loading}
               >
-                {loading ? "Deleting..." : "Delete"}
+                {loading ? "Đang xóa..." : "Xóa"}
               </Button>
             </AlertDialogPrimitive.Action>
           </div>

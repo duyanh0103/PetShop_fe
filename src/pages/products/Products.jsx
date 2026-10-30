@@ -8,28 +8,26 @@ import ProductDeleteDialog from "./components/ProductDeleteDialog";
 import useProductDialog from "./hooks/useProductDialog";
 import useProducts from "./hooks/useProducts";
 import useProductMutations from "./hooks/useProductMutations";
-import { defaultProductFormValues } from "./hooks/useProductForm";
+import useCategoryOptions from "./hooks/useCategoryOptions";
 import { useToast } from "@/components/ui/toast";
 
 export default function Products() {
   const [submitting, setSubmitting] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
   const dialog = useProductDialog();
   const { open, mode, selectedProduct, openCreateDialog, openEditDialog, closeDialog } = dialog;
   const { toast } = useToast();
+
+  const { categories } = useCategoryOptions();
+
   const productsQuery = useProducts();
-  const mutations = useProductMutations({
-    products: productsQuery.products,
-    setProducts: productsQuery.setProducts,
-    page: productsQuery.page,
-    setPage: productsQuery.setPage,
-  });
   const {
     products,
-    paginatedProducts,
     loading,
+    error,
     search,
     selectedCategory,
-    selectedStatus,
+    isActive,
     page,
     pageSize,
     totalPages,
@@ -38,10 +36,13 @@ export default function Products() {
     endItem,
     setSearch,
     setSelectedCategory,
-    setSelectedStatus,
+    setIsActive,
     setPage,
     setPageSize,
+    refetch,
   } = productsQuery;
+
+  const mutations = useProductMutations({ refetch });
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedToDelete, setSelectedToDelete] = useState(null);
@@ -50,45 +51,47 @@ export default function Products() {
     try {
       setSubmitting(true);
 
+      const payload = {
+        name: data.productName,
+        sku: data.sku,
+        categoryId: data.categoryId,
+        price: data.price,
+        quantity: data.quantity,
+        description: data.description,
+        imageUrl: data.imageUrl,
+        isActive: data.isActive,
+      };
+
       if (mode === "edit" && selectedProduct) {
-        const updatedProduct = await mutations.updateProduct({
-          ...selectedProduct,
-          ...data,
-          id: selectedProduct.id,
-          name: data.productName,
-          image: data.imageFile ? URL.createObjectURL(data.imageFile) : selectedProduct.image,
-          category: data.category,
-          price: Number(data.price),
-          stock: Number(data.stock),
-          status: data.status,
-          sku: data.sku,
-        });
-
-        toast({
-          title: "Product updated successfully.",
-          description: updatedProduct.name,
-        });
+        const updated = await mutations.updateProduct(selectedProduct.id, payload);
+        toast({ title: "Cập nhật sản phẩm thành công.", description: updated.name });
       } else {
-        const createdProduct = await mutations.createProduct({
-          ...data,
-          name: data.productName,
-          image: data.imageFile ? URL.createObjectURL(data.imageFile) : "https://placehold.co/60x60",
-          category: data.category,
-          price: Number(data.price),
-          stock: Number(data.stock),
-          status: data.status,
-          sku: data.sku,
-        });
-
-        toast({
-          title: "Product created successfully.",
-          description: createdProduct.name,
-        });
+        const created = await mutations.createProduct(payload);
+        toast({ title: "Tạo sản phẩm thành công.", description: created.name });
       }
 
       closeDialog();
+    } catch (err) {
+      toast({
+        title: "Đã có lỗi xảy ra.",
+        description: err.response?.data?.message ?? "Vui lòng thử lại.",
+      });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleToggleStatus = async (product) => {
+    try {
+      setTogglingId(product.id);
+      await mutations.updateProductStatus(product.id, !product.isActive);
+    } catch (err) {
+      toast({
+        title: "Không thể cập nhật trạng thái.",
+        description: err.response?.data?.message ?? "Vui lòng thử lại.",
+      });
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -97,10 +100,11 @@ export default function Products() {
       <ProductToolbar
         search={search}
         category={selectedCategory}
-        status={selectedStatus}
+        status={isActive}
+        categories={categories}
         onSearchChange={(event) => setSearch(event.target.value)}
-        onCategoryChange={(value) => setSelectedCategory(value)}
-        onStatusChange={(value) => setSelectedStatus(value)}
+        onCategoryChange={setSelectedCategory}
+        onStatusChange={setIsActive}
         onAddProduct={openCreateDialog}
       />
 
@@ -118,41 +122,51 @@ export default function Products() {
           id: selectedProduct.id,
           productName: selectedProduct.name,
           sku: selectedProduct.sku,
-          category: selectedProduct.category,
+          categoryId: selectedProduct.categoryId,
           price: selectedProduct.price,
-          stock: selectedProduct.stock,
+          quantity: selectedProduct.quantity,
           description: selectedProduct.description ?? "",
-          status: selectedProduct.status,
-          image: selectedProduct.image,
-          imageFile: null,
-        } : defaultProductFormValues}
+          imageUrl: selectedProduct.imageUrl ?? "",
+          isActive: selectedProduct.isActive,
+        } : undefined}
         onSubmit={handleSubmitProduct}
         loading={submitting}
         products={products}
+        categories={categories}
         mode={mode}
-        submitLabel={mode === "edit" ? "Update Product" : "Save Product"}
+        submitLabel={mode === "edit" ? "Cập nhật sản phẩm" : "Lưu sản phẩm"}
       />
+
+      {error ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
 
       {loading ? (
         <div className="rounded-xl border border-border/60 bg-background/95 p-6 text-sm text-muted-foreground">
-          Loading products...
+          Đang tải sản phẩm...
         </div>
       ) : (
         <>
           <ProductTable
-            products={paginatedProducts}
+            products={products}
             onEdit={openEditDialog}
             onDelete={(product) => {
               setSelectedToDelete(product);
               setDeleteDialogOpen(true);
             }}
+            onToggleStatus={handleToggleStatus}
+            togglingId={togglingId}
           />
 
           <ProductDeleteDialog
             open={deleteDialogOpen}
             onOpenChange={(nextOpen) => {
               setDeleteDialogOpen(nextOpen);
-              if (!nextOpen) setSelectedToDelete(null);
+              if (!nextOpen) {
+                setSelectedToDelete(null);
+              }
             }}
             product={selectedToDelete}
             onConfirm={async (id) => {
@@ -161,8 +175,13 @@ export default function Products() {
                 const deleted = await mutations.deleteProduct(id);
 
                 if (deleted) {
-                  toast({ title: "Product deleted successfully." });
+                  toast({ title: "Xóa sản phẩm thành công." });
                 }
+              } catch (err) {
+                toast({
+                  title: "Không thể xóa sản phẩm.",
+                  description: err.response?.data?.message ?? "Vui lòng thử lại.",
+                });
               } finally {
                 setSubmitting(false);
                 setDeleteDialogOpen(false);

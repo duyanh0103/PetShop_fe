@@ -33,7 +33,7 @@ export default function UserMenu() {
           </div>
 
           <div className="hidden text-left md:block">
-            <p className="text-sm font-medium">{user?.username ?? "Guest"}</p>
+            <p className="text-sm font-medium">{user?.username ?? "Khách"}</p>
             <p className="text-xs text-muted-foreground">{user?.role ?? ""}</p>
           </div>
 
@@ -53,7 +53,7 @@ export default function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive">
           <LogOut className="mr-2 h-4 w-4" />
-          Logout
+          Đăng xuất
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

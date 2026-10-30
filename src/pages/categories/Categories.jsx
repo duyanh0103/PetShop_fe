@@ -49,17 +49,17 @@ export default function Categories() {
 
       if (mode === "edit" && selectedCategory) {
         const updated = await mutations.updateCategory(selectedCategory.id, data);
-        toast({ title: "Category updated successfully.", description: updated.name });
+        toast({ title: "Cập nhật danh mục thành công.", description: updated.name });
       } else {
         const created = await mutations.createCategory(data);
-        toast({ title: "Category created successfully.", description: created.name });
+        toast({ title: "Tạo danh mục thành công.", description: created.name });
       }
 
       closeDialog();
     } catch (err) {
       toast({
-        title: "Something went wrong.",
-        description: err.response?.data?.message ?? "Please try again.",
+        title: "Đã có lỗi xảy ra.",
+        description: err.response?.data?.message ?? "Vui lòng thử lại.",
       });
     } finally {
       setSubmitting(false);
@@ -72,8 +72,8 @@ export default function Categories() {
       await mutations.updateCategoryStatus(category.id, !category.isActive);
     } catch (err) {
       toast({
-        title: "Could not update status.",
-        description: err.response?.data?.message ?? "Please try again.",
+        title: "Không thể cập nhật trạng thái.",
+        description: err.response?.data?.message ?? "Vui lòng thử lại.",
       });
     } finally {
       setTogglingId(null);
@@ -110,7 +110,7 @@ export default function Categories() {
         onSubmit={handleSubmitCategory}
         loading={submitting}
         mode={mode}
-        submitLabel={mode === "edit" ? "Update Category" : "Save Category"}
+        submitLabel={mode === "edit" ? "Cập nhật danh mục" : "Lưu danh mục"}
       />
 
       {error ? (
@@ -121,7 +121,7 @@ export default function Categories() {
 
       {loading ? (
         <div className="rounded-xl border border-border/60 bg-background/95 p-6 text-sm text-muted-foreground">
-          Loading categories...
+          Đang tải danh mục...
         </div>
       ) : (
         <>
@@ -152,12 +152,12 @@ export default function Categories() {
               try {
                 setSubmitting(true);
                 await mutations.deleteCategory(id);
-                toast({ title: "Category deleted successfully." });
+                toast({ title: "Xóa danh mục thành công." });
                 setDeleteDialogOpen(false);
                 setSelectedToDelete(null);
               } catch (err) {
                 setDeleteError(
-                  err.response?.data?.message ?? "Could not delete category."
+                  err.response?.data?.message ?? "Không thể xóa danh mục."
                 );
               } finally {
                 setSubmitting(false);
@@ -176,7 +176,7 @@ export default function Categories() {
               endItem={endItem}
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
-              itemLabel="categories"
+              itemLabel="danh mục"
             />
           )}
         </>

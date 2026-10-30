@@ -1,54 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import productSchema from "@/pages/products/schemas/productSchema";
 import { generateSku } from "@/pages/products/utils/generateSku";
 import { zodResolver } from "@/lib/zodResolver";
 
-function createProductFormSchema(products = [], currentProductId = null) {
-  return productSchema.superRefine((value, context) => {
-    const normalizedSku = String(value.sku ?? "").trim().toUpperCase();
-
-    if (normalizedSku !== value.sku) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["sku"],
-        message: "SKU must be uppercase",
-      });
-    }
-
-    const isDuplicate = products.some((product) => {
-      if (!product?.sku) {
-        return false;
-      }
-
-      if (currentProductId && Number(product.id) === Number(currentProductId)) {
-        return false;
-      }
-
-      return String(product.sku).toUpperCase() === normalizedSku;
-    });
-
-    if (isDuplicate) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["sku"],
-        message: "SKU already exists.",
-      });
-    }
-  });
-}
-
 const defaultProductFormValues = {
   productName: "",
   sku: "",
-  category: "",
+  categoryId: "",
   price: 0,
-  stock: 0,
+  quantity: 0,
   description: "",
-  status: "ACTIVE",
-  imageFile: null,
+  imageUrl: "",
+  isActive: true,
 };
 
 function parseNumericValue(value) {
@@ -62,24 +27,15 @@ function parseNumericValue(value) {
   return Number.isNaN(parsed) ? "" : parsed;
 }
 
-function getImagePreview(defaultValues) {
-  return (
-    defaultValues?.imagePreview ||
-    defaultValues?.imageUrl ||
-    defaultValues?.image ||
-    ""
-  );
-}
-
 function normalizeDefaultValues(defaultValues) {
   return {
     ...defaultProductFormValues,
     ...defaultValues,
     price: parseNumericValue(defaultValues?.price),
-    stock: parseNumericValue(defaultValues?.stock),
+    quantity: parseNumericValue(defaultValues?.quantity),
     description: defaultValues?.description ?? "",
-    status: defaultValues?.status ?? "ACTIVE",
-    imageFile: defaultValues?.imageFile ?? null,
+    imageUrl: defaultValues?.imageUrl ?? "",
+    isActive: defaultValues?.isActive ?? true,
   };
 }
 
@@ -88,6 +44,7 @@ export function useProductForm({
   onSubmit,
   loading = false,
   products = [],
+  categories = [],
   isEditMode = false,
 }) {
   const normalizedDefaultValues = useMemo(
@@ -99,39 +56,24 @@ export function useProductForm({
     [normalizedDefaultValues]
   );
 
-  const currentProductId = defaultValues?.id ?? null;
-  const productFormSchema = useMemo(
-    () => createProductFormSchema(products, currentProductId),
-    [products, currentProductId]
-  );
-
   const form = useForm({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(productSchema),
     defaultValues: normalizedDefaultValues,
     mode: "onTouched",
   });
 
   const { reset, setValue, handleSubmit, control, register, formState, watch } = form;
-  const [imagePreview, setImagePreview] = useState(
-    getImagePreview(defaultValues)
-  );
-  const [imageResetToken, setImageResetToken] = useState(0);
-  const objectUrlRef = useRef("");
 
   useEffect(() => {
     reset(normalizedDefaultValues);
-    setImagePreview(getImagePreview(defaultValues));
-    setImageResetToken((current) => current + 1);
+  }, [defaultValuesKey, normalizedDefaultValues, reset]);
 
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = "";
-    }
-  }, [defaultValuesKey, defaultValues, normalizedDefaultValues, reset]);
-
-  const categoryValue = watch("category");
+  const categoryIdValue = watch("categoryId");
   const skuValue = watch("sku");
 
+  // Best-effort SKU suggestion only — the backend is the source of truth for
+  // uniqueness (a 409 "SKU already exists" surfaces on submit if this guess
+  // collides, e.g. because `products` here is only the current page).
   useEffect(() => {
     if (isEditMode) {
       return;
@@ -141,7 +83,8 @@ export function useProductForm({
       return;
     }
 
-    const suggestedSku = generateSku(categoryValue, products);
+    const selectedCategory = categories.find((category) => category.id === categoryIdValue);
+    const suggestedSku = generateSku(selectedCategory?.name, products);
 
     if (suggestedSku) {
       setValue("sku", suggestedSku, {
@@ -149,45 +92,14 @@ export function useProductForm({
         shouldValidate: true,
       });
     }
-  }, [categoryValue, isEditMode, products, setValue, skuValue]);
-
-  useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-      }
-    };
-  }, []);
-
-  const updateImageFile = (file) => {
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = "";
-    }
-
-    setValue("imageFile", file ?? null, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-
-    if (file) {
-      const previewUrl = URL.createObjectURL(file);
-      objectUrlRef.current = previewUrl;
-      setImagePreview(previewUrl);
-      return;
-    }
-
-    setImagePreview(getImagePreview(defaultValues));
-  };
-
-  const clearImageFile = () => {
-    updateImageFile(null);
-  };
+  }, [categoryIdValue, categories, isEditMode, products, setValue, skuValue]);
 
   const submitHandler = handleSubmit(async (values) => {
     const normalizedValues = {
       ...values,
       sku: String(values.sku ?? "").trim().toUpperCase(),
+      description: values.description || undefined,
+      imageUrl: values.imageUrl || undefined,
     };
 
     await onSubmit?.(normalizedValues);
@@ -198,10 +110,6 @@ export function useProductForm({
     register,
     formState,
     handleSubmit: submitHandler,
-    imagePreview,
-    imageResetToken,
-    updateImageFile,
-    clearImageFile,
     loading,
   };
 }

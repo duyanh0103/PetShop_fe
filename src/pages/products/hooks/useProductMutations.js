@@ -2,82 +2,53 @@ import { useCallback } from "react";
 
 import productService from "../services/productService";
 
-export default function useProductMutations({ setProducts, page, setPage, pageSize }) {
+/**
+ * Wraps productService CRUD calls and refetches the current list afterward.
+ * We refetch rather than patch local state in place because the list is
+ * server-paginated/sorted/filtered — splicing an item into the wrong page
+ * locally would silently drift from what the backend would actually return.
+ */
+export default function useProductMutations({ refetch }) {
   const createProduct = useCallback(
-    async (product) => {
-      const normalizedProduct = {
-        ...product,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const createdProduct = await productService.createProduct(normalizedProduct);
-      const finalProduct = {
-        ...createdProduct,
-        id: createdProduct.id ?? normalizedProduct.id,
-        createdAt: createdProduct.createdAt ?? normalizedProduct.createdAt,
-        updatedAt: createdProduct.updatedAt ?? normalizedProduct.updatedAt,
-      };
-
-      if (typeof setProducts === "function") {
-        setProducts((currentProducts) => [finalProduct, ...currentProducts]);
-      }
-
-      return finalProduct;
+    async (data) => {
+      const created = await productService.createProduct(data);
+      await refetch();
+      return created;
     },
-    [setProducts]
+    [refetch]
   );
 
   const updateProduct = useCallback(
-    async (product) => {
-      const normalizedProduct = {
-        ...product,
-        updatedAt: new Date().toISOString(),
-      };
-
-      const updatedProduct = await productService.updateProduct(product.id, normalizedProduct);
-      const finalProduct = {
-        ...updatedProduct,
-        id: updatedProduct?.id ?? product.id,
-        createdAt: updatedProduct?.createdAt ?? product.createdAt,
-        updatedAt: updatedProduct?.updatedAt ?? normalizedProduct.updatedAt,
-      };
-
-      if (typeof setProducts === "function") {
-        setProducts((currentProducts) =>
-          currentProducts.map((currentProduct) =>
-            currentProduct.id === product.id ? finalProduct : currentProduct
-          )
-        );
-      }
-
-      return finalProduct;
+    async (id, data) => {
+      const updated = await productService.updateProduct(id, data);
+      await refetch();
+      return updated;
     },
-    [setProducts]
+    [refetch]
+  );
+
+  const updateProductStatus = useCallback(
+    async (id, isActive) => {
+      const updated = await productService.updateProductStatus(id, isActive);
+      await refetch();
+      return updated;
+    },
+    [refetch]
   );
 
   const deleteProduct = useCallback(
     async (id) => {
       const deletedId = await productService.deleteProduct(id);
-
-      if (!deletedId) return null;
-
-      if (typeof setProducts === "function") {
-        setProducts((currentProducts) => currentProducts.filter((currentProduct) => currentProduct.id !== id));
-      }
-
-      // Pagination adjustments are handled by the `useProducts` hook which
-      // recalculates total pages and clamps the current page when `products` changes.
-
+      await refetch();
       return deletedId;
     },
-    [setProducts, setPage, page]
+    [refetch]
   );
 
   return {
     createProduct,
     updateProduct,
+    updateProductStatus,
     deleteProduct,
   };
 }

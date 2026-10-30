@@ -1,64 +1,59 @@
-import { products as mockProducts } from "@/data/products";
+import api from "@/services/api";
 
-const delay = (ms = 150) => new Promise((resolve) => setTimeout(resolve, ms));
+function toQueryParams({ page, limit, search, categoryId, isActive, sortBy, sortDir }) {
+  const params = { page, limit, sortBy, sortDir };
 
-function normalizeProductPayload(data) {
-  return {
-    ...data,
-    id: data.id ?? Date.now(),
-  };
+  if (search) {
+    params.search = search;
+  }
+
+  if (categoryId && categoryId !== "all") {
+    params.categoryId = categoryId;
+  }
+
+  if (isActive !== "all" && isActive !== undefined) {
+    params.isActive = isActive;
+  }
+
+  return params;
 }
 
 export const productService = {
-  async getProducts() {
-    await delay();
-    return Promise.resolve(mockProducts);
+  async getProducts(query) {
+    const response = await api.get("/products", {
+      params: toQueryParams(query),
+    });
+
+    return {
+      items: response.data.data,
+      pagination: response.data.pagination,
+    };
   },
 
   async getProductById(id) {
-    await delay();
-    const product = mockProducts.find((item) => item.id === Number(id));
-
-    return Promise.resolve(product ?? null);
+    const response = await api.get(`/products/${id}`);
+    return response.data.data;
   },
 
   async createProduct(data) {
-    await delay();
-    return Promise.resolve(data);
+    const response = await api.post("/products", data);
+    return response.data.data;
   },
 
   async updateProduct(id, data) {
-    await delay();
-    const existingProduct = mockProducts.find((item) => item.id === Number(id));
+    const response = await api.put(`/products/${id}`, data);
+    return response.data.data;
+  },
 
-    if (!existingProduct) {
-      return Promise.resolve(null);
-    }
-
-    const updatedProduct = {
-      ...existingProduct,
-      ...data,
-      id: Number(id),
-      createdAt: existingProduct.createdAt ?? null,
-    };
-
-    return Promise.resolve(updatedProduct);
+  async updateProductStatus(id, isActive) {
+    const response = await api.patch(`/products/${id}/status`, { isActive });
+    return response.data.data;
   },
 
   async deleteProduct(id) {
-    await delay();
-    const idx = mockProducts.findIndex((item) => item.id === Number(id));
-
-    if (idx === -1) {
-      return Promise.resolve(null);
-    }
-
-    // remove the product from the in-memory list (mock)
-    const [removed] = mockProducts.splice(idx, 1);
-
-    // return removed id for confirmation
-    return Promise.resolve(removed.id);
-  },  
+    await api.delete(`/products/${id}`);
+    return id;
+  },
 };
 
 export default productService;

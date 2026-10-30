@@ -6,8 +6,8 @@ import { z } from "zod";
 // ("superadmin@petshop.com") wouldn't satisfy that regex, so it must not be
 // enforced here.
 const loginSchema = z.object({
-  username: z.string().trim().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().trim().min(1, "Vui lòng nhập tên đăng nhập"),
+  password: z.string().min(1, "Vui lòng nhập mật khẩu"),
 });
 
 export default loginSchema;

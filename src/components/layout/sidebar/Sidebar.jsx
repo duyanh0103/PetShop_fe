@@ -38,7 +38,7 @@ export default function Sidebar({ isCollapsed = false, onToggleCollapse }) {
           {!isCollapsed && (
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-900">PetShop</p>
-              <p className="truncate text-xs text-slate-500">Admin</p>
+              <p className="truncate text-xs text-slate-500">Quản trị viên</p>
             </div>
           )}
         </div>

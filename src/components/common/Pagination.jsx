@@ -39,19 +39,19 @@ export default function Pagination({
   endItem,
   onPageChange,
   onPageSizeChange,
-  itemLabel = "items",
+  itemLabel = "mục",
 }) {
   const visiblePages = getVisiblePages(page, totalPages);
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-background/95 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="text-sm text-muted-foreground">
-        Showing <span className="font-medium text-foreground">{startItem}</span> - <span className="font-medium text-foreground">{endItem}</span> of <span className="font-medium text-foreground">{totalItems}</span> {itemLabel}
+        Hiển thị <span className="font-medium text-foreground">{startItem}</span> - <span className="font-medium text-foreground">{endItem}</span> trong tổng số <span className="font-medium text-foreground">{totalItems}</span> {itemLabel}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Rows per page</span>
+          <span>Số dòng mỗi trang</span>
           <Select value={String(pageSize)} onValueChange={onPageSizeChange}>
             <SelectTrigger className="h-9 w-[88px]">
               <SelectValue />
@@ -75,7 +75,7 @@ export default function Pagination({
             disabled={page <= 1}
           >
             <ChevronLeft className="mr-1 size-4" />
-            Previous
+            Trước
           </Button>
 
           <div className="flex items-center gap-1">
@@ -112,7 +112,7 @@ export default function Pagination({
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page >= totalPages}
           >
-            Next
+            Sau
             <ChevronRight className="ml-1 size-4" />
           </Button>
         </div>

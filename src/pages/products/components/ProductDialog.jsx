@@ -15,11 +15,12 @@ export default function ProductDialog({
   onSubmit,
   loading = false,
   products = [],
+  categories = [],
   mode = "create",
-  submitLabel = "Save Product",
+  submitLabel = "Lưu sản phẩm",
 }) {
   const isEditMode = mode === "edit";
-  const title = isEditMode ? "Edit Product" : "Add Product";
+  const title = isEditMode ? "Sửa sản phẩm" : "Thêm sản phẩm";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -27,7 +28,7 @@ export default function ProductDialog({
         <DialogHeader className="pr-8 text-left">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Fill in product information below.
+            Điền thông tin sản phẩm bên dưới.
           </DialogDescription>
         </DialogHeader>
 
@@ -38,6 +39,7 @@ export default function ProductDialog({
           onCancel={() => onOpenChange?.(false)}
           loading={loading}
           products={products}
+          categories={categories}
           isEditMode={isEditMode}
           submitLabel={submitLabel}
         />

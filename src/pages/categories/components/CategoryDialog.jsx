@@ -15,10 +15,10 @@ export default function CategoryDialog({
   onSubmit,
   loading = false,
   mode = "create",
-  submitLabel = "Save Category",
+  submitLabel = "Lưu danh mục",
 }) {
   const isEditMode = mode === "edit";
-  const title = isEditMode ? "Edit Category" : "Add Category";
+  const title = isEditMode ? "Sửa danh mục" : "Thêm danh mục";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -26,7 +26,7 @@ export default function CategoryDialog({
         <DialogHeader className="pr-8 text-left">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Fill in category information below.
+            Điền thông tin danh mục bên dưới.
           </DialogDescription>
         </DialogHeader>
 

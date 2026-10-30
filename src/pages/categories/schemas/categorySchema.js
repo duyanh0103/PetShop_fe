@@ -4,12 +4,12 @@ import { z } from "zod";
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const categorySchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(255),
+  name: z.string().trim().min(1, "Vui lòng nhập tên danh mục").max(255),
   slug: z
     .string()
     .trim()
     .max(255)
-    .regex(slugRegex, "Slug must be lowercase words separated by hyphens (e.g. dog-food)")
+    .regex(slugRegex, "Slug chỉ được chứa chữ thường, số, cách nhau bởi dấu gạch ngang (vd: thuc-an-cho-cho)")
     .optional()
     .or(z.literal("")),
   description: z.string().trim().max(2000).optional().or(z.literal("")),
@@ -18,7 +18,7 @@ const categorySchema = z.object({
     if (value === "" || value === null || value === undefined) return 0;
     const parsed = Number(value);
     return Number.isNaN(parsed) ? value : parsed;
-  }, z.number({ error: "Sort order must be a number" }).int("Sort order must be a whole number")),
+  }, z.number({ error: "Thứ tự sắp xếp phải là số" }).int("Thứ tự sắp xếp phải là số nguyên")),
   isActive: z.boolean().default(true),
 });
 

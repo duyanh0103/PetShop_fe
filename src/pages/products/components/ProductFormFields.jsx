@@ -8,21 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import ProductImageUpload from "./ProductImageUpload";
-
-const categoryOptions = [
-  { label: "Dog Food", value: "DOG_FOOD" },
-  { label: "Cat Food", value: "CAT_FOOD" },
-  { label: "Accessories", value: "ACCESSORIES" },
-  { label: "Pet Toys", value: "PET_TOYS" },
-  { label: "Medicine", value: "MEDICINE" },
-];
-
-const statusOptions = [
-  { label: "Active", value: "ACTIVE" },
-  { label: "Inactive", value: "INACTIVE" },
-  { label: "Out Of Stock", value: "OUT_OF_STOCK" },
-];
+import ImageUrlField from "@/components/common/ImageUrlField";
 
 function FieldError({ message }) {
   if (!message) {
@@ -63,7 +49,7 @@ function PriceField({ control, disabled, error }) {
       render={({ field }) => (
         <div className="space-y-2">
           <FormLabel htmlFor="product-price" required>
-            Price
+            Giá
           </FormLabel>
           <Input
             id="product-price"
@@ -82,56 +68,11 @@ function PriceField({ control, disabled, error }) {
   );
 }
 
-function SelectField({
-  control,
-  name,
-  label,
-  placeholder,
-  options,
-  required = false,
-  error,
-  disabled = false,
-}) {
-  return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <div className="space-y-2">
-          <FormLabel htmlFor={name} required={required}>
-            {label}
-          </FormLabel>
-          <Select
-            value={field.value ?? ""}
-            onValueChange={field.onChange}
-            disabled={disabled}
-          >
-            <SelectTrigger id={name} className="h-10 w-full">
-              <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldError message={error?.message} />
-        </div>
-      )}
-    />
-  );
-}
-
 export default function ProductFormFields({
   control,
   register,
   errors,
-  imagePreview,
-  imageResetToken,
-  onImageChange,
-  onImageRemove,
+  categories = [],
   disabled = false,
   isEditMode = false,
 }) {
@@ -140,12 +81,12 @@ export default function ProductFormFields({
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="space-y-2">
           <FormLabel htmlFor="product-name" required>
-            Product Name
+            Tên sản phẩm
           </FormLabel>
           <Input
             id="product-name"
             type="text"
-            placeholder="Enter product name"
+            placeholder="Nhập tên sản phẩm"
             disabled={disabled}
             aria-invalid={Boolean(errors.productName)}
             {...register("productName")}
@@ -160,7 +101,7 @@ export default function ProductFormFields({
           <Input
             id="product-sku"
             type="text"
-            placeholder="Enter SKU"
+            placeholder="Nhập SKU"
             disabled={disabled || isEditMode}
             readOnly={isEditMode}
             aria-invalid={Boolean(errors.sku)}
@@ -169,25 +110,56 @@ export default function ProductFormFields({
           <FieldError message={errors.sku?.message} />
         </div>
 
-        <SelectField
+        <Controller
           control={control}
-          name="category"
-          label="Category"
-          placeholder="Choose category"
-          options={categoryOptions}
-          required
-          error={errors.category}
-          disabled={disabled}
+          name="categoryId"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <FormLabel htmlFor="product-category" required>
+                Danh mục
+              </FormLabel>
+              <Select
+                value={field.value || ""}
+                onValueChange={field.onChange}
+                disabled={disabled}
+              >
+                <SelectTrigger id="product-category" className="h-10 w-full">
+                  <SelectValue placeholder="Chọn danh mục" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((option) => (
+                    <SelectItem key={option.id} value={option.id}>
+                      {option.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError message={errors.categoryId?.message} />
+            </div>
+          )}
         />
 
-        <SelectField
+        <Controller
           control={control}
-          name="status"
-          label="Status"
-          placeholder="Choose status"
-          options={statusOptions}
-          error={errors.status}
-          disabled={disabled}
+          name="isActive"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <FormLabel htmlFor="product-status">Trạng thái</FormLabel>
+              <Select
+                value={field.value ? "true" : "false"}
+                onValueChange={(value) => field.onChange(value === "true")}
+                disabled={disabled}
+              >
+                <SelectTrigger id="product-status" className="h-10 w-full">
+                  <SelectValue placeholder="Chọn trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">Hoạt động</SelectItem>
+                  <SelectItem value="false">Ngừng hoạt động</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         />
 
         <PriceField
@@ -197,18 +169,18 @@ export default function ProductFormFields({
         />
 
         <div className="space-y-2">
-          <FormLabel htmlFor="product-stock" required>
-            Stock
+          <FormLabel htmlFor="product-quantity" required>
+            Tồn kho
           </FormLabel>
           <Input
-            id="product-stock"
+            id="product-quantity"
             type="number"
             min="0"
             step="1"
             placeholder="0"
             disabled={disabled}
-            aria-invalid={Boolean(errors.stock)}
-            {...register("stock", {
+            aria-invalid={Boolean(errors.quantity)}
+            {...register("quantity", {
               setValueAs: (value) => {
                 if (value === "" || value === null || value === undefined) {
                   return "";
@@ -219,16 +191,25 @@ export default function ProductFormFields({
               },
             })}
           />
-          <FieldError message={errors.stock?.message} />
+          <FieldError message={errors.quantity?.message} />
+        </div>
+
+        <div className="lg:col-span-2">
+          <ImageUrlField
+            control={control}
+            id="product-image-url"
+            error={errors.imageUrl}
+            disabled={disabled}
+          />
         </div>
       </div>
 
       <div className="space-y-2">
-        <FormLabel htmlFor="product-description">Description</FormLabel>
+        <FormLabel htmlFor="product-description">Mô tả</FormLabel>
         <textarea
           id="product-description"
           rows={5}
-          placeholder="Write a short product description"
+          placeholder="Nhập mô tả ngắn cho sản phẩm"
           disabled={disabled}
           aria-invalid={Boolean(errors.description)}
           className="flex min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
@@ -236,14 +217,6 @@ export default function ProductFormFields({
         />
         <FieldError message={errors.description?.message} />
       </div>
-
-      <ProductImageUpload
-        preview={imagePreview}
-        onChange={onImageChange}
-        onRemove={onImageRemove}
-        disabled={disabled}
-        resetToken={imageResetToken}
-      />
     </div>
   );
 }
