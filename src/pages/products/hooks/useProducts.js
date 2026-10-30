@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import productService from "../services/productService";
 import useDebouncedValue from "@/hooks/useDebouncedValue";
@@ -11,10 +11,15 @@ const DEFAULT_PAGE_SIZE = 10;
  * delegated to the backend.
  */
 export default function useProducts() {
-  const [products, setProducts] = useState([]);
-  const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // `requestKey` records which query the stored result belongs to, so
+  // `loading` can be derived instead of set synchronously inside an effect.
+  const [result, setResult] = useState({
+    requestKey: null,
+    products: [],
+    pagination: { total: 0, totalPages: 1 },
+    error: null,
+  });
+  const [reloadToken, setReloadToken] = useState(0);
 
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -26,38 +31,63 @@ export default function useProducts() {
 
   const debouncedSearch = useDebouncedValue(search, 400);
 
-  const fetchProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Any filter/search change should reset back to page 1. Adjusting state
+  // during render avoids an extra fetch of the old page with the new filters.
+  const filterKey = JSON.stringify([debouncedSearch, selectedCategory, isActive]);
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setPage(1);
+  }
 
-      const result = await productService.getProducts({
-        page,
-        limit: pageSize,
-        search: debouncedSearch,
-        categoryId: selectedCategory,
-        isActive,
-        sortBy,
-        sortDir,
+  const params = useMemo(
+    () => ({
+      page,
+      limit: pageSize,
+      search: debouncedSearch,
+      categoryId: selectedCategory,
+      isActive,
+      sortBy,
+      sortDir,
+    }),
+    [page, pageSize, debouncedSearch, selectedCategory, isActive, sortBy, sortDir]
+  );
+  const requestKey = JSON.stringify([params, reloadToken]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    productService
+      .getProducts(params)
+      .then((data) => {
+        if (ignore) return;
+        setResult({
+          requestKey,
+          products: data.items,
+          pagination: data.pagination,
+          error: null,
+        });
+      })
+      .catch((err) => {
+        if (ignore) return;
+        setResult((prev) => ({
+          ...prev,
+          requestKey,
+          error: err.response?.data?.message ?? "Failed to load products",
+        }));
       });
 
-      setProducts(result.items);
-      setPagination(result.pagination);
-    } catch (err) {
-      setError(err.response?.data?.message ?? "Failed to load products");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, debouncedSearch, selectedCategory, isActive, sortBy, sortDir]);
+    // Drop responses from superseded requests (e.g. fast typing in search).
+    return () => {
+      ignore = true;
+    };
+  }, [params, requestKey]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+  const refetch = useCallback(() => setReloadToken((token) => token + 1), []);
 
-  // Any filter/search change should reset back to page 1.
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, selectedCategory, isActive]);
+  const loading = result.requestKey !== requestKey;
+  const error = loading ? null : result.error;
+  const { products, pagination } = result;
 
   const setPageSize = (value) => {
     const nextPageSize = Number(value);
@@ -91,6 +121,6 @@ export default function useProducts() {
     setIsActive,
     setPage,
     setPageSize,
-    refetch: fetchProducts,
+    refetch,
   };
 }

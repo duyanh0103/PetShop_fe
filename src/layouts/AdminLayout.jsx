@@ -34,7 +34,7 @@ export default function AdminLayout() {
           "overflow-hidden"
         )}
       >
-        <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={toggleSidebar} />
+        <Sidebar isCollapsed={isSidebarCollapsed} />
       </div>
 
       <div className="flex flex-1 flex-col">

@@ -1,5 +1,3 @@
-import * as React from "react";
-
 export function Card({ title, children, className = "", ...props }) {
   return (
     <div className={`bg-white shadow rounded p-4 ${className}`.trim()} {...props}>

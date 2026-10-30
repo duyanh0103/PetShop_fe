@@ -1,7 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -12,7 +10,7 @@ import { sidebarMenu } from "@/data/menu";
 import { cn } from "@/lib/utils";
 import useAuthStore from "@/store/authStore";
 
-export default function Sidebar({ isCollapsed = false, onToggleCollapse }) {
+export default function Sidebar({ isCollapsed = false }) {
   const currentUserRole = useAuthStore((state) => state.user?.role);
 
   const filteredMenu = sidebarMenu.filter((item) => {
@@ -42,17 +40,6 @@ export default function Sidebar({ isCollapsed = false, onToggleCollapse }) {
             </div>
           )}
         </div>
-
-        {/* <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onToggleCollapse}
-          className="shrink-0"
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-        </Button> */}
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-3 custom-scroll">

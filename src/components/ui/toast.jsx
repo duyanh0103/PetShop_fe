@@ -2,8 +2,6 @@ import { createContext, useCallback, useContext, useMemo, useState } from "react
 import { createPortal } from "react-dom";
 import { CheckCircle2, X } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-
 const ToastContext = createContext(null);
 
 let toastId = 0;

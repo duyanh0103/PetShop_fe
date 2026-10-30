@@ -13,20 +13,6 @@ function formatCurrency(value) {
   return Number.isFinite(num) ? num : 0;
 }
 
-function createHeaderStyle(workbook) {
-  return {
-    font: { bold: true, color: { argb: "FFFFFFFF" } },
-    fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FF2563EB" } },
-    alignment: { horizontal: "center", vertical: "middle" },
-    border: {
-      top: { style: "thin", color: { argb: "FFCBD5E1" } },
-      left: { style: "thin", color: { argb: "FFCBD5E1" } },
-      bottom: { style: "thin", color: { argb: "FFCBD5E1" } },
-      right: { style: "thin", color: { argb: "FFCBD5E1" } },
-    },
-  };
-}
-
 function createInstructionRows() {
   return [
     ["Field", "Required", "Example", "Notes"],
