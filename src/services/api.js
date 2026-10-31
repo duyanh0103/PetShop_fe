@@ -18,18 +18,24 @@ api.interceptors.request.use((config) => {
 });
 
 // A 401 means the token is missing/expired/invalid — clear local auth state
-// and send the user back to the login page.
+// and send the user to the login page of the area they are in. A 401 from the
+// login call itself is just wrong credentials and is left to the form.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url === "/auth/login";
+
+    if (error.response?.status === 401 && !isLoginRequest) {
       useAuthStore.getState().logout();
 
-      if (
-        typeof window !== "undefined" &&
-        !window.location.pathname.startsWith("/auth/login")
-      ) {
-        window.location.href = "/auth/login";
+      if (typeof window !== "undefined") {
+        const loginPath = window.location.pathname.startsWith("/admin")
+          ? "/admin/login"
+          : "/login";
+
+        if (window.location.pathname !== loginPath) {
+          window.location.href = loginPath;
+        }
       }
     }
 

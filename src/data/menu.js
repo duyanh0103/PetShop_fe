@@ -13,7 +13,7 @@ import {
 export const sidebarMenu = [
   {
     title: "Tổng quan",
-    path: "/dashboard",
+    path: "/admin/dashboard",
     icon: LayoutDashboard,
     roles: ["SUPER_ADMIN", "ADMIN", "STAFF"],
     group: "CHÍNH",
@@ -21,14 +21,14 @@ export const sidebarMenu = [
 
   {
     title: "Sản phẩm",
-    path: "/products",
+    path: "/admin/products",
     icon: Package,
     roles: ["SUPER_ADMIN", "ADMIN", "STAFF"],
     group: "QUẢN LÝ",
   },
   {
     title: "Danh mục",
-    path: "/categories",
+    path: "/admin/categories",
     icon: FolderTree,
     roles: ["SUPER_ADMIN", "ADMIN"],
     group: "QUẢN LÝ",
@@ -36,14 +36,14 @@ export const sidebarMenu = [
 
   {
     title: "Đơn hàng",
-    path: "/orders",
+    path: "/admin/orders",
     icon: ShoppingCart,
     roles: ["SUPER_ADMIN", "ADMIN", "STAFF"],
     group: "BÁN HÀNG",
   },
   {
     title: "Khách hàng",
-    path: "/customers",
+    path: "/admin/customers",
     icon: Users,
     roles: ["SUPER_ADMIN", "ADMIN"],
     group: "BÁN HÀNG",
@@ -51,14 +51,14 @@ export const sidebarMenu = [
 
   {
     title: "Đánh giá",
-    path: "/reviews",
+    path: "/admin/reviews",
     icon: Star,
     roles: ["SUPER_ADMIN", "ADMIN"],
     group: "TIẾP THỊ",
   },
   {
     title: "Mã giảm giá",
-    path: "/coupons",
+    path: "/admin/coupons",
     icon: TicketPercent,
     roles: ["SUPER_ADMIN", "ADMIN"],
     group: "TIẾP THỊ",
@@ -66,7 +66,7 @@ export const sidebarMenu = [
 
   {
     title: "Báo cáo",
-    path: "/reports",
+    path: "/admin/reports",
     icon: ChartColumn,
     roles: ["SUPER_ADMIN", "ADMIN"],
     group: "PHÂN TÍCH",
@@ -74,7 +74,7 @@ export const sidebarMenu = [
 
   {
     title: "Cài đặt",
-    path: "/settings",
+    path: "/admin/settings",
     icon: Settings,
     roles: ["SUPER_ADMIN", "ADMIN"],
     group: "HỆ THỐNG",

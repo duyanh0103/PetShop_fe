@@ -72,7 +72,7 @@ export default function Sidebar({ isCollapsed = false }) {
                           <NavLink
                             key={item.path}
                             to={item.path}
-                            end={item.path === "/dashboard"}
+                            end={item.path === "/admin/dashboard"}
                             className={({ isActive }) =>
                               cn(
                                 baseClassName,
@@ -93,7 +93,7 @@ export default function Sidebar({ isCollapsed = false }) {
                     <NavLink
                       key={item.path}
                       to={item.path}
-                      end={item.path === "/dashboard"}
+                      end={item.path === "/admin/dashboard"}
                       className={({ isActive }) =>
                         cn(
                           baseClassName,

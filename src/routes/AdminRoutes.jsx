@@ -15,28 +15,29 @@ import Settings from "@/pages/settings/Settings";
 import NotFound from "./NotFound";
 import ProtectedRoute from "./ProtectedRoute";
 
+// Self-contained nested router mounted at "/admin/*" by AppRouter.
 export default function AdminRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route index element={<Navigate to="dashboard" replace />} />
 
       <Route element={<AdminLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/products" element={<Products />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="products" element={<Products />} />
         <Route
-          path="/categories"
+          path="categories"
           element={
             <ProtectedRoute allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
               <Categories />
             </ProtectedRoute>
           }
         />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/customers" element={<Customers />} />
-        <Route path="/reviews" element={<Reviews />} />
-        <Route path="/coupons" element={<Coupons />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="customers" element={<Customers />} />
+        <Route path="reviews" element={<Reviews />} />
+        <Route path="coupons" element={<Coupons />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

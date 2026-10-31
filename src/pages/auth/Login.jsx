@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@/lib/zodResolver";
+import { isAdminRole } from "@/lib/roles";
 import authService from "@/services/authService";
 import useAuthStore from "@/store/authStore";
 
@@ -23,7 +24,7 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: "", password: "" },
+    defaultValues: { identifier: "", password: "" },
     mode: "onTouched",
   });
 
@@ -32,9 +33,16 @@ export default function Login() {
 
     try {
       const { user, token } = await authService.login(values);
+
+      // Customer accounts are valid but must not open an admin session.
+      if (!isAdminRole(user.role)) {
+        setServerError("Tài khoản không có quyền truy cập trang quản trị");
+        return;
+      }
+
       setAuth({ user, token });
 
-      const redirectTo = location.state?.from?.pathname ?? "/dashboard";
+      const redirectTo = location.state?.from?.pathname ?? "/admin/dashboard";
       navigate(redirectTo, { replace: true });
     } catch (error) {
       setServerError(
@@ -60,19 +68,19 @@ export default function Login() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium text-slate-900">
-              Tên đăng nhập
+            <label htmlFor="identifier" className="text-sm font-medium text-slate-900">
+              Email hoặc tên đăng nhập
             </label>
             <Input
-              id="username"
+              id="identifier"
               type="text"
               autoComplete="username"
-              placeholder="Nhập tên đăng nhập"
-              aria-invalid={Boolean(errors.username)}
-              {...register("username")}
+              placeholder="Nhập email hoặc tên đăng nhập"
+              aria-invalid={Boolean(errors.identifier)}
+              {...register("identifier")}
             />
-            {errors.username ? (
-              <p className="text-sm text-destructive">{errors.username.message}</p>
+            {errors.identifier ? (
+              <p className="text-sm text-destructive">{errors.identifier.message}</p>
             ) : null}
           </div>
 

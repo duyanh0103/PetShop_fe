@@ -18,7 +18,7 @@ export default function UserMenu() {
 
   const handleLogout = () => {
     logout();
-    navigate("/auth/login", { replace: true });
+    navigate("/admin/login", { replace: true });
   };
 
   return (
