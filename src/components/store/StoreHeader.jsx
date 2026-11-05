@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LayoutDashboard, LogOut, PawPrint, Search, User } from "lucide-react";
+import { LayoutDashboard, LogOut, PawPrint, ReceiptText, Search, ShoppingCart, User } from "lucide-react";
 import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { isAdminRole } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import useAuthStore from "@/store/authStore";
+import useCartStore, { selectCartCount } from "@/store/cartStore";
 
 const navLinkClassName = ({ isActive }) =>
   cn(
@@ -53,6 +54,23 @@ function SearchForm({ className }) {
         className="pl-8"
       />
     </form>
+  );
+}
+
+function CartLink() {
+  const count = useCartStore(selectCartCount);
+
+  return (
+    <Button asChild variant="ghost" size="icon-lg" className="relative">
+      <Link to="/cart" aria-label={`Giỏ hàng, ${count} sản phẩm`}>
+        <ShoppingCart />
+        {count > 0 ? (
+          <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-primary px-1 text-[0.65rem] font-semibold text-primary-foreground">
+            {count > 99 ? "99+" : count}
+          </span>
+        ) : null}
+      </Link>
+    </Button>
   );
 }
 
@@ -102,7 +120,12 @@ function AccountMenu() {
             <LayoutDashboard className="mr-2 size-4" />
             Trang quản trị
           </DropdownMenuItem>
-        ) : null}
+        ) : (
+          <DropdownMenuItem onClick={() => navigate("/orders")}>
+            <ReceiptText className="mr-2 size-4" />
+            Đơn hàng của tôi
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={handleLogout} className="text-destructive">
           <LogOut className="mr-2 size-4" />
           Đăng xuất
@@ -132,7 +155,8 @@ export default function StoreHeader() {
 
         <SearchForm className="ml-auto hidden w-full max-w-xs sm:block" />
 
-        <div className="ml-auto sm:ml-0">
+        <div className="ml-auto flex items-center gap-1 sm:ml-0">
+          <CartLink />
           <AccountMenu />
         </div>
       </div>

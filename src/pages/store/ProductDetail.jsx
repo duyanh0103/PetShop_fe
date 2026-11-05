@@ -1,41 +1,14 @@
-import { useState } from "react";
-import { Minus, PawPrint, Plus, ShoppingCart } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, PawPrint, ShoppingCart } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 import { ErrorState } from "@/components/store/ProductGrid";
+import QuantityPicker from "@/components/store/QuantityPicker";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatPrice } from "@/lib/format";
+import useCartStore from "@/store/cartStore";
 
 import { usePublicProduct } from "./hooks/useStoreCatalog";
-
-function QuantityPicker({ value, max, onChange }) {
-  return (
-    <div className="inline-flex items-center rounded-lg border border-border">
-      <Button
-        variant="ghost"
-        size="icon-lg"
-        onClick={() => onChange(value - 1)}
-        disabled={value <= 1}
-        aria-label="Giảm số lượng"
-      >
-        <Minus />
-      </Button>
-      <span className="w-10 text-center text-sm font-medium" aria-live="polite">
-        {value}
-      </span>
-      <Button
-        variant="ghost"
-        size="icon-lg"
-        onClick={() => onChange(value + 1)}
-        disabled={value >= max}
-        aria-label="Tăng số lượng"
-      >
-        <Plus />
-      </Button>
-    </div>
-  );
-}
 
 function DetailSkeleton() {
   return (
@@ -60,6 +33,17 @@ export default function ProductDetail() {
 function ProductDetailContent({ id }) {
   const { product, loading, error, refetch } = usePublicProduct(id);
   const [quantity, setQuantity] = useState(1);
+  const [justAdded, setJustAdded] = useState(false);
+  const inCart = useCartStore(
+    (state) => state.items.find((item) => item.productId === id)?.quantity ?? 0
+  );
+  const addItem = useCartStore((state) => state.addItem);
+
+  useEffect(() => {
+    if (!justAdded) return undefined;
+    const timer = setTimeout(() => setJustAdded(false), 2000);
+    return () => clearTimeout(timer);
+  }, [justAdded]);
 
   if (loading) return <DetailSkeleton />;
 
@@ -75,6 +59,17 @@ function ProductDetailContent({ id }) {
   }
 
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  // Stock still available to add once what is already in the cart is counted.
+  const remaining = Math.max(product.quantity - inCart, 0);
+  const atCartLimit = product.inStock && remaining === 0;
+  const pickerValue = Math.min(quantity, Math.max(remaining, 1));
+
+  const handleAddToCart = () => {
+    addItem(product, pickerValue);
+    setQuantity(1);
+    setJustAdded(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -126,29 +121,29 @@ function ProductDetailContent({ id }) {
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
-            {product.inStock ? (
+            {remaining > 0 ? (
               <QuantityPicker
-                value={quantity}
-                max={product.quantity}
-                onChange={(next) => setQuantity(Math.min(Math.max(next, 1), product.quantity))}
+                value={pickerValue}
+                max={remaining}
+                onChange={(next) => setQuantity(Math.min(Math.max(next, 1), remaining))}
               />
             ) : null}
 
-            {/* Cart arrives in Sprint 2; the button is shown but disabled until then. */}
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span tabIndex={0}>
-                    <Button size="lg" disabled>
-                      <ShoppingCart data-icon="inline-start" />
-                      {product.inStock ? "Thêm vào giỏ" : "Hết hàng"}
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {product.inStock ? <TooltipContent>Sắp ra mắt</TooltipContent> : null}
-              </Tooltip>
-            </TooltipProvider>
+            <Button size="lg" onClick={handleAddToCart} disabled={remaining === 0}>
+              {justAdded ? <Check data-icon="inline-start" /> : <ShoppingCart data-icon="inline-start" />}
+              {!product.inStock ? "Hết hàng" : justAdded ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}
+            </Button>
+
+            {inCart > 0 ? (
+              <Link to="/cart" className="text-sm font-medium underline-offset-4 hover:underline">
+                Xem giỏ hàng ({inCart})
+              </Link>
+            ) : null}
           </div>
+
+          {atCartLimit ? (
+            <p className="text-sm text-muted-foreground">Đã đạt số lượng tối đa trong giỏ</p>
+          ) : null}
 
           {product.description ? (
             <div className="space-y-2 border-t border-border pt-5">

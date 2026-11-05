@@ -8,6 +8,20 @@ import ProductDetail from "@/pages/store/ProductDetail";
 import CustomerLogin from "@/pages/store/auth/CustomerLogin";
 import Register from "@/pages/store/auth/Register";
 import StoreNotFound from "@/pages/store/StoreNotFound";
+import Cart from "@/pages/store/Cart";
+import Checkout from "@/pages/store/Checkout";
+import Orders from "@/pages/store/Orders";
+import OrderDetail from "@/pages/store/OrderDetail";
+import { CUSTOMER_ROLES } from "@/lib/roles";
+
+import ProtectedRoute from "./ProtectedRoute";
+
+// Admin accounts cannot buy; /cart explains why instead of a silent redirect.
+const customerOnly = (element) => (
+  <ProtectedRoute allowedRoles={CUSTOMER_ROLES} loginPath="/login" fallbackPath="/cart">
+    {element}
+  </ProtectedRoute>
+);
 
 // Public storefront, mounted at "/*" by AppRouter.
 export default function StoreRoutes() {
@@ -19,6 +33,10 @@ export default function StoreRoutes() {
         <Route path="products/:id" element={<ProductDetail />} />
         <Route path="login" element={<CustomerLogin />} />
         <Route path="register" element={<Register />} />
+        <Route path="cart" element={<Cart />} />
+        <Route path="checkout" element={customerOnly(<Checkout />)} />
+        <Route path="orders" element={customerOnly(<Orders />)} />
+        <Route path="orders/:id" element={customerOnly(<OrderDetail />)} />
         <Route path="*" element={<StoreNotFound />} />
       </Route>
     </Routes>
