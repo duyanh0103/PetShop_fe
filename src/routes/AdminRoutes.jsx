@@ -6,7 +6,9 @@ import Dashboard from "@/pages/dashboard/Dashboard";
 import Products from "@/pages/products/Products";
 import Categories from "@/pages/categories/Categories";
 import Orders from "@/pages/orders/Orders";
+import AdminOrderDetail from "@/pages/orders/OrderDetail";
 import Customers from "@/pages/customers/Customers";
+import CustomerDetail from "@/pages/customers/CustomerDetail";
 import Reviews from "@/pages/reviews/Reviews";
 import Coupons from "@/pages/coupons/Coupons";
 import Reports from "@/pages/reports/Reports";
@@ -33,7 +35,23 @@ export default function AdminRoutes() {
           }
         />
         <Route path="orders" element={<Orders />} />
-        <Route path="customers" element={<Customers />} />
+        <Route path="orders/:id" element={<AdminOrderDetail />} />
+        <Route
+          path="customers"
+          element={
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+              <Customers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="customers/:id"
+          element={
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+              <CustomerDetail />
+            </ProtectedRoute>
+          }
+        />
         <Route path="reviews" element={<Reviews />} />
         <Route path="coupons" element={<Coupons />} />
         <Route path="reports" element={<Reports />} />

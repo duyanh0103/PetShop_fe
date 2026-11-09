@@ -10,7 +10,9 @@ import UserMenu from "./UserMenu";
 export default function Header({ onToggleSidebar, isSidebarCollapsed }) {
   const { pathname } = useLocation();
 
-  const currentMenu = sidebarMenu.find((item) => item.path === pathname);
+  const currentMenu = sidebarMenu.find(
+    (item) => pathname === item.path || pathname.startsWith(`${item.path}/`)
+  );
 
   const pageTitle = currentMenu?.title || "PetShop";
 
