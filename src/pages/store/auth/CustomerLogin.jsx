@@ -48,17 +48,17 @@ export default function CustomerLogin() {
   return (
     <AuthCard
       title="Đăng nhập"
-      description="Đăng nhập để đặt hàng và theo dõi đơn hàng"
+      description="Đăng nhập để đặt hàng và xem đơn của bạn."
       footer={
         <>
           Chưa có tài khoản?{" "}
-          <Link to="/register" state={location.state} className="font-medium text-foreground underline-offset-4 hover:underline">
+          <Link to="/register" state={location.state} className="font-extrabold text-primary hover:underline">
             Đăng ký
           </Link>
         </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
         <FormField
           id="identifier"
           label="Email hoặc tên đăng nhập"

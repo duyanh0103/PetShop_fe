@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { LayoutDashboard, LogOut, PawPrint, ReceiptText, Search, ShoppingCart, User } from "lucide-react";
-import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
+import { LayoutDashboard, LogOut, ReceiptText, Search, ShoppingCart, User } from "lucide-react";
+import { Link, NavLink, useMatch, useNavigate, useSearchParams } from "react-router-dom";
+
+import BrandLogo from "@/components/brand/BrandLogo";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +20,8 @@ import useCartStore, { selectCartCount } from "@/store/cartStore";
 
 const navLinkClassName = ({ isActive }) =>
   cn(
-    "text-sm font-medium transition-colors hover:text-foreground",
-    isActive ? "text-foreground" : "text-muted-foreground"
+    "rounded-full px-3 py-2.5 font-bold text-foreground transition-colors hover:bg-pastel",
+    isActive && "bg-pastel"
   );
 
 function SearchForm({ className }) {
@@ -44,14 +46,14 @@ function SearchForm({ className }) {
 
   return (
     <form onSubmit={handleSubmit} className={cn("relative", className)} role="search">
-      <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Search className="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-muted-foreground" />
       <Input
         type="search"
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        placeholder="Tìm sản phẩm..."
+        placeholder="Tìm pate, hạt, cát…"
         aria-label="Tìm sản phẩm"
-        className="pl-8"
+        className="rounded-full pl-11"
       />
     </form>
   );
@@ -59,18 +61,25 @@ function SearchForm({ className }) {
 
 function CartLink() {
   const count = useCartStore(selectCartCount);
+  const onCartPage = Boolean(useMatch("/cart"));
 
   return (
-    <Button asChild variant="ghost" size="icon-lg" className="relative">
-      <Link to="/cart" aria-label={`Giỏ hàng, ${count} sản phẩm`}>
-        <ShoppingCart />
-        {count > 0 ? (
-          <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-primary px-1 text-[0.65rem] font-semibold text-primary-foreground">
-            {count > 99 ? "99+" : count}
-          </span>
-        ) : null}
-      </Link>
-    </Button>
+    <Link
+      to="/cart"
+      aria-label={`Giỏ hàng, ${count} sản phẩm`}
+      aria-current={onCartPage ? "page" : undefined}
+      className={cn(
+        "relative inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-colors",
+        onCartPage ? "bg-primary text-primary-foreground" : "bg-pastel text-foreground hover:bg-[#c4defa]"
+      )}
+    >
+      <ShoppingCart className="size-[22px]" />
+      {count > 0 ? (
+        <span className="absolute -top-1 -right-1.5 flex min-w-5 items-center justify-center rounded-full border-2 border-card bg-highlight px-1.5 text-[11px] leading-4 font-extrabold text-highlight-foreground">
+          {count > 99 ? "99+" : count}
+        </span>
+      ) : null}
+    </Link>
   );
 }
 
@@ -82,7 +91,7 @@ function AccountMenu() {
 
   if (!isAuthenticated) {
     return (
-      <Button asChild variant="outline">
+      <Button asChild>
         <Link to="/login">Đăng nhập</Link>
       </Button>
     );
@@ -96,8 +105,8 @@ function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="gap-2" aria-label="Tài khoản">
-          <User className="size-4" />
+        <Button variant="secondary" className="gap-2 px-3.5" aria-label="Tài khoản">
+          <User className="size-[18px]" />
           <span className="hidden max-w-32 truncate sm:inline">
             {user?.fullName || user?.username}
           </span>
@@ -106,7 +115,7 @@ function AccountMenu() {
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuItem disabled className="opacity-100">
           <div className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-medium text-foreground">
+            <span className="truncate text-sm font-extrabold text-foreground">
               {user?.fullName || user?.username}
             </span>
             {user?.email ? (
@@ -137,14 +146,11 @@ function AccountMenu() {
 
 export default function StoreHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
-        <Link to="/" className="flex shrink-0 items-center gap-2 font-semibold text-foreground">
-          <PawPrint className="size-6" />
-          <span>PetShop</span>
-        </Link>
+    <header className="sticky top-0 z-30 border-b-[1.5px] border-border bg-card">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-3 gap-y-3 px-4 py-3 sm:gap-x-5 sm:px-5">
+        <BrandLogo size={44} textClassName="text-[22px] sm:text-[26px]" />
 
-        <nav className="hidden items-center gap-5 md:flex" aria-label="Điều hướng chính">
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Điều hướng chính">
           <NavLink to="/" end className={navLinkClassName}>
             Trang chủ
           </NavLink>
@@ -153,16 +159,14 @@ export default function StoreHeader() {
           </NavLink>
         </nav>
 
-        <SearchForm className="ml-auto hidden w-full max-w-xs sm:block" />
+        <SearchForm className="hidden min-w-0 flex-[1_1_260px] sm:block" />
 
-        <div className="ml-auto flex items-center gap-1 sm:ml-0">
+        <div className="ml-auto flex items-center gap-2.5">
           <CartLink />
           <AccountMenu />
         </div>
-      </div>
 
-      <div className="px-4 pb-3 sm:hidden">
-        <SearchForm />
+        <SearchForm className="w-full sm:hidden" />
       </div>
     </header>
   );

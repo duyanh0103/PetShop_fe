@@ -1,8 +1,9 @@
-import { PawPrint, ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import OrderSummary from "@/components/store/OrderSummary";
-import { ErrorState } from "@/components/store/ProductGrid";
+import PawIcon from "@/components/brand/PawIcon";
+import { EmptyState, ErrorState } from "@/components/store/ProductGrid";
 import QuantityPicker from "@/components/store/QuantityPicker";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
@@ -18,72 +19,88 @@ function CartLine({ item, line, onQuantityChange, onRemove }) {
   const insufficient = line?.status === "INSUFFICIENT";
 
   return (
-    <li className="flex gap-3 p-3 sm:gap-4 sm:p-4">
-      <Link
-        to={`/products/${item.productId}`}
-        className={cn("size-20 shrink-0 overflow-hidden rounded-lg bg-muted sm:size-24", unavailable && "opacity-50")}
-      >
-        {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <PawPrint className="size-8" />
-          </div>
-        )}
-      </Link>
+    <li
+      className={cn(
+        "flex flex-col gap-2.5 rounded-[20px] border-[1.5px] bg-card p-3.5",
+        insufficient ? "border-warning-border" : unavailable ? "border-[#c9d1dc]" : "border-border"
+      )}
+    >
+      <div className="flex items-start gap-3.5">
+        <Link
+          to={`/products/${item.productId}`}
+          aria-label={item.name}
+          className={cn("size-[84px] shrink-0 overflow-hidden rounded-[14px] bg-tile", unavailable && "opacity-45")}
+        >
+          {item.imageUrl ? (
+            <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-tile-icon">
+              <PawIcon size={32} />
+            </div>
+          )}
+        </Link>
 
-      <div className="min-w-0 flex-1 space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <Link
-            to={`/products/${item.productId}`}
-            className={cn("line-clamp-2 text-sm font-medium hover:underline", unavailable && "text-muted-foreground")}
-          >
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <Link to={`/products/${item.productId}`} className="leading-snug font-bold text-foreground hover:underline">
             {item.name}
           </Link>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onRemove(item.productId)}
-            aria-label={`Xoá ${item.name} khỏi giỏ`}
-          >
-            <Trash2 />
-          </Button>
+          {line && !unavailable ? (
+            <span className="text-sm text-muted-foreground">{formatPrice(line.unitPrice)} / sản phẩm</span>
+          ) : null}
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-2.5">
+            {unavailable ? null : (
+              <QuantityPicker
+                size="sm"
+                value={item.quantity}
+                max={Math.max(line?.available ?? item.quantity, item.quantity)}
+                onChange={(next) => onQuantityChange(item.productId, next)}
+              />
+            )}
+            <span className="ml-auto text-[17px] font-extrabold text-primary">
+              {unavailable ? "—" : formatPrice(line?.lineTotal)}
+            </span>
+          </div>
         </div>
 
-        {unavailable ? (
-          <p className="text-sm text-destructive">Sản phẩm không còn bán</p>
-        ) : (
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <QuantityPicker
-              value={item.quantity}
-              max={Math.max(line?.available ?? item.quantity, item.quantity)}
-              onChange={(next) => onQuantityChange(item.productId, next)}
-            />
-            <div className="text-right">
-              <p className="text-sm font-semibold">{formatPrice(line?.lineTotal)}</p>
-              <p className="text-xs text-muted-foreground">{formatPrice(line?.unitPrice)} / sản phẩm</p>
-            </div>
-          </div>
-        )}
-
-        {insufficient ? (
-          <p className="flex flex-wrap items-center gap-2 text-sm text-destructive">
-            Chỉ còn {line.available} sản phẩm
-            <Button variant="outline" size="xs" onClick={() => onQuantityChange(item.productId, line.available)}>
-              Giảm về {line.available}
-            </Button>
-          </p>
-        ) : null}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:bg-status-locked hover:text-danger-text"
+          onClick={() => onRemove(item.productId)}
+          aria-label={`Xoá ${item.name} khỏi giỏ`}
+        >
+          <Trash2 className="size-5" />
+        </Button>
       </div>
+
+      {insufficient ? (
+        <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl bg-warning-soft px-3 py-2.5 text-sm font-bold text-warning-text">
+          Chỉ còn {line.available} sản phẩm trong kho
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-warning-border bg-card text-warning-text hover:bg-warning-soft"
+            onClick={() => onQuantityChange(item.productId, line.available)}
+          >
+            Giảm về {line.available}
+          </Button>
+        </div>
+      ) : null}
+
+      {unavailable ? (
+        <div className="rounded-xl bg-status-cancelled px-3 py-2.5 text-sm font-bold text-status-cancelled-foreground">
+          Sản phẩm không còn bán — hãy xoá khỏi giỏ để đặt hàng
+        </div>
+      ) : null}
     </li>
   );
 }
 
 function CartSkeleton() {
   return (
-    <div className="grid animate-pulse gap-6 lg:grid-cols-[1fr_20rem]">
-      <div className="h-64 rounded-xl bg-muted" />
-      <div className="h-48 rounded-xl bg-muted" />
+    <div className="flex flex-wrap items-start gap-6" aria-busy="true">
+      <div className="skeleton h-64 min-w-0 flex-[999_1_560px] rounded-[20px]" />
+      <div className="skeleton h-72 flex-[1_1_320px] rounded-3xl" />
     </div>
   );
 }
@@ -98,17 +115,23 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 py-20 text-center">
-        <ShoppingCart className="size-12 text-muted-foreground" />
-        <p className="text-muted-foreground">Giỏ hàng đang trống</p>
-        <Button asChild>
-          <Link to="/products">Mua sắm ngay</Link>
-        </Button>
+      <div className="flex flex-col gap-5">
+        <h1 className="text-[34px]">Giỏ hàng</h1>
+        <EmptyState
+          icon={<ShoppingCart className="size-7" />}
+          title="Giỏ đang trống trơn"
+          message="Cục Meow đói rồi nè!"
+          action={
+            <Button asChild>
+              <Link to="/products">Mua sắm ngay</Link>
+            </Button>
+          }
+        />
       </div>
     );
   }
 
-  if (error && !quote) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (error && !quote) return <ErrorState title="Không tính được tiền giỏ hàng" message={error.message} onRetry={refetch} />;
   if (!quote) return <CartSkeleton />;
 
   const lineById = new Map(quote.items.map((line) => [line.productId, line]));
@@ -116,12 +139,14 @@ export default function Cart() {
   const isAdmin = isAdminRole(user?.role);
   const amountToFreeShipping = quote.freeShippingThreshold - quote.subtotal;
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Giỏ hàng ({count})</h1>
+  const freeShippingProgress = Math.min(100, Math.round((quote.subtotal / quote.freeShippingThreshold) * 100));
 
-      <div className="grid items-start gap-6 lg:grid-cols-[1fr_20rem]">
-        <ul className="divide-y divide-border rounded-xl border border-border">
+  return (
+    <div className="flex flex-col gap-5">
+      <h1 className="text-[34px]">Giỏ hàng ({count})</h1>
+
+      <div className="flex flex-wrap items-start gap-6">
+        <ul className="flex min-w-0 flex-[999_1_560px] flex-col gap-3">
           {items.map((item) => (
             <CartLine
               key={item.productId}
@@ -133,19 +158,33 @@ export default function Cart() {
           ))}
         </ul>
 
-        <aside className="space-y-4 rounded-xl border border-border p-4 lg:sticky lg:top-20">
-          <OrderSummary subtotal={quote.subtotal} shippingFee={quote.shippingFee} total={quote.total} />
+        <aside className="flex flex-[1_1_320px] flex-col gap-3 rounded-3xl border-[1.5px] border-border bg-card p-5 lg:sticky lg:top-24">
+          <h2 className="text-[22px]">Tổng đơn</h2>
 
           {quote.shippingFee > 0 && amountToFreeShipping > 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Mua thêm {formatPrice(amountToFreeShipping)} để được miễn phí vận chuyển
-            </p>
+            <div className="flex flex-col gap-2 rounded-[14px] bg-muted p-3 text-sm">
+              <span>
+                Mua thêm <b>{formatPrice(amountToFreeShipping)}</b> để được <b>miễn phí vận chuyển</b>
+              </span>
+              <div
+                className="h-2 overflow-hidden rounded-full bg-pastel"
+                role="progressbar"
+                aria-label="Tiến độ tới mức miễn phí vận chuyển"
+                aria-valuenow={freeShippingProgress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div className="h-full rounded-full bg-primary" style={{ width: `${freeShippingProgress}%` }} />
+              </div>
+            </div>
           ) : null}
 
-          {error ? <ErrorState message={error.message} onRetry={refetch} /> : null}
+          <OrderSummary subtotal={quote.subtotal} shippingFee={quote.shippingFee} total={quote.total} />
+
+          {error ? <ErrorState title="Không tính được tiền giỏ hàng" message={error.message} onRetry={refetch} /> : null}
 
           {hasProblem && !updating ? (
-            <p className="text-sm text-destructive">Vui lòng xử lý các sản phẩm được đánh dấu trước khi đặt hàng.</p>
+            <p className="text-[13px] font-bold text-danger-text">Xử lý các dòng được đánh dấu trước khi đặt hàng.</p>
           ) : null}
 
           {isAdmin ? (
@@ -153,14 +192,15 @@ export default function Cart() {
               Tài khoản quản trị không thể đặt hàng. Vui lòng dùng tài khoản khách hàng.
             </p>
           ) : hasProblem || updating || error ? (
-            <Button size="lg" className="w-full" disabled>
+            <Button size="lg" className="w-full text-[17px]" disabled>
               Đặt hàng
             </Button>
           ) : (
-            <Button asChild size="lg" className="w-full">
+            <Button asChild size="lg" className="w-full text-[17px]">
               <Link to="/checkout">Đặt hàng</Link>
             </Button>
           )}
+          <p className="text-center text-[13px] text-muted-foreground">Thanh toán khi nhận hàng (COD)</p>
         </aside>
       </div>
     </div>

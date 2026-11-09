@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Banknote } from "lucide-react";
+import PawIcon from "@/components/brand/PawIcon";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
@@ -24,6 +25,8 @@ export default function Checkout() {
   const clearCart = useCartStore((state) => state.clear);
   const { quote, updating, error, refetch } = useCartQuote(items);
   const [serverError, setServerError] = useState("");
+  // A 409 means price or stock moved; the design shows that as a yellow notice up top.
+  const [quoteChanged, setQuoteChanged] = useState(false);
   // Emptying the cart on success must not trigger the empty-cart redirect below.
   const [placed, setPlaced] = useState(false);
 
@@ -51,6 +54,7 @@ export default function Checkout() {
 
   const onSubmit = async (values) => {
     setServerError("");
+    setQuoteChanged(false);
 
     try {
       const order = await orderService.create(items, { ...values, expectedTotal: quote.total });
@@ -66,85 +70,123 @@ export default function Checkout() {
         });
       }
 
-      setServerError(data?.message ?? "Đặt hàng thất bại. Vui lòng thử lại.");
-
       // Price or stock moved under the customer: show them the current numbers.
-      if (submitError.response?.status === 409) refetch();
+      if (submitError.response?.status === 409) {
+        setQuoteChanged(true);
+        refetch();
+      } else {
+        setServerError(data?.message ?? "Đặt hàng thất bại. Vui lòng thử lại.");
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-      <h1 className="text-2xl font-semibold">Thanh toán</h1>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col" noValidate>
+      <Link to="/cart" className="text-sm font-bold text-primary hover:underline">
+        ‹ Quay lại giỏ hàng
+      </Link>
+      <h1 className="mt-2 mb-5 text-[34px]">Thanh toán</h1>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
-        <div className="space-y-6">
-          <section className="space-y-4 rounded-xl border border-border p-4 sm:p-6">
-            <h2 className="font-semibold">Thông tin giao hàng</h2>
-            <FormField
-              id="shippingName"
-              label="Họ tên người nhận"
-              autoComplete="name"
-              error={errors.shippingName}
-              registration={register("shippingName")}
-            />
-            <FormField
-              id="shippingPhone"
-              label="Số điện thoại"
-              type="tel"
-              autoComplete="tel"
-              error={errors.shippingPhone}
-              registration={register("shippingPhone")}
-            />
+      {quoteChanged ? (
+        <div
+          role="alert"
+          className="mb-5 rounded-2xl border-[1.5px] border-warning-border bg-warning-soft px-4 py-3.5 leading-normal font-bold text-warning-text"
+        >
+          Giá hoặc tồn kho vừa thay đổi. Shop đã cập nhật số mới bên dưới — bạn kiểm tra lại rồi xác nhận nhé.
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap items-start gap-6">
+        <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-5">
+          <section className="flex flex-col gap-3.5 rounded-3xl border-[1.5px] border-border bg-card p-5">
+            <h2 className="text-[22px]">Thông tin giao hàng</h2>
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              <FormField
+                id="shippingName"
+                label="Họ tên"
+                autoComplete="name"
+                error={errors.shippingName}
+                registration={register("shippingName")}
+              />
+              <FormField
+                id="shippingPhone"
+                label="Số điện thoại"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                error={errors.shippingPhone}
+                registration={register("shippingPhone")}
+              />
+            </div>
             <FormField
               id="shippingAddress"
-              label="Địa chỉ giao hàng"
+              label="Địa chỉ nhận hàng"
               autoComplete="street-address"
+              placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
               error={errors.shippingAddress}
               registration={register("shippingAddress")}
             />
             <FormField
               id="note"
-              label="Ghi chú (không bắt buộc)"
+              label="Ghi chú"
+              hint="(không bắt buộc)"
+              multiline
+              placeholder="Ví dụ: gọi trước khi giao"
               error={errors.note}
               registration={register("note")}
             />
           </section>
 
-          <section className="flex items-center gap-3 rounded-xl border border-border p-4 sm:p-6">
-            <Banknote className="size-5 shrink-0 text-muted-foreground" />
+          <section className="flex items-center gap-3.5 rounded-3xl bg-pastel p-5">
+            <span className="flex size-[52px] shrink-0 items-center justify-center rounded-2xl bg-card text-primary">
+              <Banknote className="size-6" aria-hidden="true" />
+            </span>
             <div>
-              <h2 className="text-sm font-semibold">Thanh toán khi nhận hàng (COD)</h2>
-              <p className="text-sm text-muted-foreground">Bạn trả tiền mặt cho nhân viên giao hàng.</p>
+              <h2 className="font-sans text-[17px] font-bold">Thanh toán khi nhận hàng (COD)</h2>
+              <p className="mt-1 text-body">Bạn trả tiền mặt cho shipper khi nhận được hàng. Không cần nhập thẻ.</p>
             </div>
           </section>
         </div>
 
-        <aside className="space-y-4 rounded-xl border border-border p-4 lg:sticky lg:top-20">
-          <h2 className="font-semibold">Đơn hàng</h2>
+        <aside className="flex flex-[1_1_340px] flex-col gap-3 rounded-3xl border-[1.5px] border-border bg-card p-5 lg:sticky lg:top-24">
+          <h2 className="text-[22px]">Tóm tắt đơn</h2>
 
           {quote ? (
             <>
-              <ul className="space-y-2 text-sm">
-                {quote.items.map((line) => (
-                  <li key={line.productId} className="flex justify-between gap-3">
-                    <span className="min-w-0 text-muted-foreground">
-                      {line.name ?? "Sản phẩm không còn bán"} × {line.quantity}
-                    </span>
-                    <span className="shrink-0">{formatPrice(line.lineTotal)}</span>
-                  </li>
-                ))}
+              <ul className="flex flex-col gap-3 text-sm">
+                {quote.items.map((line) => {
+                  const cartItem = items.find((item) => item.productId === line.productId);
+
+                  return (
+                    <li key={line.productId} className="flex items-start gap-3">
+                      <span className="relative size-12 shrink-0 rounded-xl bg-tile">
+                        {cartItem?.imageUrl ? (
+                          <img src={cartItem.imageUrl} alt="" className="h-full w-full rounded-xl object-cover" />
+                        ) : (
+                          <span className="flex h-full w-full items-center justify-center text-tile-icon">
+                            <PawIcon size={20} />
+                          </span>
+                        )}
+                        <span className="absolute -top-1.5 -right-1.5 rounded-full bg-[#13306e] px-1.5 text-[11px] leading-4 font-extrabold text-white">
+                          {line.quantity}
+                        </span>
+                      </span>
+                      <span className="min-w-0 flex-1 leading-snug">{line.name ?? "Sản phẩm không còn bán"}</span>
+                      <b className="whitespace-nowrap">{formatPrice(line.lineTotal)}</b>
+                    </li>
+                  );
+                })}
               </ul>
-              <div className="border-t border-border pt-3">
+              <div className="border-t-[1.5px] border-border pt-3">
                 <OrderSummary subtotal={quote.subtotal} shippingFee={quote.shippingFee} total={quote.total} />
               </div>
             </>
           ) : (
-            <div className="h-32 animate-pulse rounded-lg bg-muted" />
+            <div className="skeleton h-40" />
           )}
 
           {error ? (
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <ServerError message={error.message} />
               <Button type="button" variant="outline" className="w-full" onClick={refetch}>
                 Thử lại
@@ -153,9 +195,9 @@ export default function Checkout() {
           ) : null}
 
           {quote && !quote.canCheckout && !updating ? (
-            <p className="text-sm text-destructive">
+            <p className="text-sm font-bold text-danger-text">
               Một số sản phẩm không đủ hàng.{" "}
-              <Link to="/cart" className="font-medium underline underline-offset-4">
+              <Link to="/cart" className="underline underline-offset-4">
                 Quay lại giỏ hàng
               </Link>
             </p>
@@ -163,7 +205,7 @@ export default function Checkout() {
 
           <ServerError message={serverError} />
 
-          <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
+          <Button type="submit" size="lg" className="h-14 w-full text-[17px] whitespace-normal" disabled={!canSubmit}>
             {isSubmitting
               ? "Đang đặt hàng..."
               : `Xác nhận đặt hàng${quote && canSubmit ? ` · ${formatPrice(quote.total)}` : ""}`}

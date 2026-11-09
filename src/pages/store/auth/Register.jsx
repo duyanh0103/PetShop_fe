@@ -10,11 +10,12 @@ import useAuthStore from "@/store/authStore";
 import { AuthCard, FormField, ServerError } from "./AuthCard";
 import registerSchema from "./registerSchema";
 
+// Paired fields sit side by side from tablet width, as in the design.
 const FIELDS = [
-  { name: "fullName", label: "Họ tên", autoComplete: "name" },
+  { name: "fullName", label: "Họ tên", autoComplete: "name", full: true },
   { name: "email", label: "Email", type: "email", autoComplete: "email" },
   { name: "username", label: "Tên đăng nhập", autoComplete: "username" },
-  { name: "phone", label: "Số điện thoại (không bắt buộc)", type: "tel", autoComplete: "tel" },
+  { name: "phone", label: "Số điện thoại", hint: "(không bắt buộc)", type: "tel", autoComplete: "tel", placeholder: "0xxxxxxxxx", full: true },
   { name: "password", label: "Mật khẩu", type: "password", autoComplete: "new-password" },
   { name: "confirmPassword", label: "Nhập lại mật khẩu", type: "password", autoComplete: "new-password" },
 ];
@@ -74,27 +75,31 @@ export default function Register() {
 
   return (
     <AuthCard
-      title="Tạo tài khoản"
-      description="Đăng ký để mua sắm nhanh hơn"
+      title="Đăng ký"
+      wide
+      description="Trở thành đồng minh cùng gu Pate."
       footer={
         <>
           Đã có tài khoản?{" "}
-          <Link to="/login" state={location.state} className="font-medium text-foreground underline-offset-4 hover:underline">
+          <Link to="/login" state={location.state} className="font-extrabold text-primary hover:underline">
             Đăng nhập
           </Link>
         </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        {FIELDS.map(({ name, ...field }) => (
-          <FormField
-            key={name}
-            id={name}
-            {...field}
-            error={errors[name]}
-            registration={register(name)}
-          />
-        ))}
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+        <div className="grid gap-3.5 sm:grid-cols-2">
+          {FIELDS.map(({ name, full, ...field }) => (
+            <FormField
+              key={name}
+              id={name}
+              className={full ? "sm:col-span-2" : undefined}
+              {...field}
+              error={errors[name]}
+              registration={register(name)}
+            />
+          ))}
+        </div>
         <ServerError message={serverError} />
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Đang tạo tài khoản..." : "Đăng ký"}

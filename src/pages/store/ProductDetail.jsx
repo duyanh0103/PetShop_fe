@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Check, PawPrint, ShoppingCart } from "lucide-react";
+import { Check } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
-import { ErrorState } from "@/components/store/ProductGrid";
+import PawIcon from "@/components/brand/PawIcon";
+import { EmptyState, ErrorState } from "@/components/store/ProductGrid";
 import QuantityPicker from "@/components/store/QuantityPicker";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
@@ -12,13 +13,14 @@ import { usePublicProduct } from "./hooks/useStoreCatalog";
 
 function DetailSkeleton() {
   return (
-    <div className="grid animate-pulse gap-8 md:grid-cols-2">
-      <div className="aspect-square rounded-2xl bg-muted" />
-      <div className="space-y-4">
-        <div className="h-8 w-3/4 rounded bg-muted" />
-        <div className="h-4 w-1/4 rounded bg-muted" />
-        <div className="h-8 w-1/3 rounded bg-muted" />
-        <div className="h-24 rounded bg-muted" />
+    <div className="flex flex-wrap gap-8" aria-busy="true">
+      <div className="skeleton aspect-square max-w-[520px] flex-[1_1_380px] rounded-[28px]" />
+      <div className="flex flex-[1_1_380px] flex-col gap-4">
+        <div className="skeleton h-7 w-20 rounded-full" />
+        <div className="skeleton h-9 w-3/4" />
+        <div className="skeleton h-4 w-1/4" />
+        <div className="skeleton h-10 w-1/3" />
+        <div className="skeleton h-32 rounded-[20px]" />
       </div>
     </div>
   );
@@ -49,12 +51,15 @@ function ProductDetailContent({ id }) {
 
   if (error?.status === 404) {
     return (
-      <div className="flex flex-col items-center gap-4 py-20 text-center">
-        <p className="text-muted-foreground">Sản phẩm không tồn tại hoặc đã ngừng kinh doanh</p>
-        <Button asChild variant="outline">
-          <Link to="/products">Về trang sản phẩm</Link>
-        </Button>
-      </div>
+      <EmptyState
+        title="Sản phẩm không tồn tại hoặc đã ngừng bán"
+        message="Có thể shop vừa cập nhật lại danh sách. Mình xem các món khác nhé."
+        action={
+          <Button asChild>
+            <Link to="/products">Về trang sản phẩm</Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -72,51 +77,60 @@ function ProductDetailContent({ id }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-5">
       <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
-            <Link to="/" className="hover:text-foreground">
+            <Link to="/" className="text-primary hover:underline">
               Trang chủ
             </Link>
           </li>
           {product.category ? (
             <>
-              <li aria-hidden="true">/</li>
+              <li aria-hidden="true">›</li>
               <li>
-                <Link to={`/products?category=${product.category.slug}`} className="hover:text-foreground">
+                <Link to={`/products?category=${product.category.slug}`} className="text-primary hover:underline">
                   {product.category.name}
                 </Link>
               </li>
             </>
           ) : null}
-          <li aria-hidden="true">/</li>
-          <li className="line-clamp-1 text-foreground" aria-current="page">
+          <li aria-hidden="true">›</li>
+          <li className="line-clamp-1 font-bold text-foreground" aria-current="page">
             {product.name}
           </li>
         </ol>
       </nav>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <div className="aspect-square overflow-hidden rounded-2xl bg-muted">
+      <div className="flex flex-wrap items-start gap-8">
+        <div className="aspect-square w-full max-w-[520px] flex-[1_1_380px] overflow-hidden rounded-[28px] bg-pastel">
           {product.imageUrl ? (
             <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-              <PawPrint className="size-20" />
+            <div className="flex h-full w-full items-center justify-center text-[#8cc2fa]">
+              <PawIcon size={120} />
             </div>
           )}
         </div>
 
-        <div className="space-y-5">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold sm:text-3xl">{product.name}</h1>
-            <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
-          </div>
+        <div className="flex min-w-0 flex-[1_1_380px] flex-col gap-4">
+          {product.category ? (
+            <span className="self-start rounded-full bg-status-pending px-3 py-1 text-[13px] font-extrabold text-status-pending-foreground">
+              {product.category.name}
+            </span>
+          ) : null}
+          <h1 className="text-[28px] sm:text-[34px]">{product.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            SKU: <b className="text-foreground">{product.sku}</b>
+          </p>
 
-          <p className="text-3xl font-bold">{formatPrice(product.price)}</p>
+          <p className="font-heading text-4xl font-extrabold text-primary">{formatPrice(product.price)}</p>
 
-          <p className={product.inStock ? "text-sm text-green-700 dark:text-green-400" : "text-sm font-medium text-destructive"}>
+          <p className="flex items-center gap-2 font-bold">
+            <span
+              aria-hidden="true"
+              className={product.inStock ? "size-2 rounded-full bg-success" : "size-2 rounded-full bg-destructive"}
+            />
             {product.inStock ? `Còn ${product.quantity} sản phẩm` : "Hết hàng"}
           </p>
 
@@ -129,28 +143,44 @@ function ProductDetailContent({ id }) {
               />
             ) : null}
 
-            <Button size="lg" onClick={handleAddToCart} disabled={remaining === 0}>
-              {justAdded ? <Check data-icon="inline-start" /> : <ShoppingCart data-icon="inline-start" />}
-              {!product.inStock ? "Hết hàng" : justAdded ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}
+            <Button size="lg" className="flex-[1_1_200px]" onClick={handleAddToCart} disabled={remaining === 0}>
+              {!product.inStock ? "Hết hàng" : "Thêm vào giỏ"}
             </Button>
 
-            {inCart > 0 ? (
-              <Link to="/cart" className="text-sm font-medium underline-offset-4 hover:underline">
-                Xem giỏ hàng ({inCart})
-              </Link>
-            ) : null}
+            <Button asChild size="lg" variant="outline">
+              <Link to="/cart">Xem giỏ hàng{inCart > 0 ? ` (${inCart})` : ""}</Link>
+            </Button>
           </div>
+
+          {justAdded ? (
+            <div
+              role="status"
+              className="flex items-center gap-2.5 rounded-[14px] bg-[#13306e] px-4 py-3 font-bold text-white"
+            >
+              <Check className="size-5 text-highlight" aria-hidden="true" />
+              Đã thêm vào giỏ
+            </div>
+          ) : null}
 
           {atCartLimit ? (
             <p className="text-sm text-muted-foreground">Đã đạt số lượng tối đa trong giỏ</p>
           ) : null}
 
           {product.description ? (
-            <div className="space-y-2 border-t border-border pt-5">
-              <h2 className="font-semibold">Mô tả sản phẩm</h2>
-              <p className="text-sm whitespace-pre-line text-muted-foreground">{product.description}</p>
+            <div className="rounded-[20px] border-[1.5px] border-border bg-card p-5">
+              <h2 className="mb-2 text-xl">Mô tả</h2>
+              <p className="leading-relaxed whitespace-pre-line text-body">{product.description}</p>
             </div>
           ) : null}
+
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5 text-sm">
+            <div className="rounded-[14px] bg-muted p-3">
+              <b>Thanh toán khi nhận hàng</b>
+            </div>
+            <div className="rounded-[14px] bg-muted p-3">
+              <b>Freeship đơn từ 500.000 ₫</b>
+            </div>
+          </div>
         </div>
       </div>
     </div>

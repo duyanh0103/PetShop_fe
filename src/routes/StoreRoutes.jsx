@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 
+import AuthLayout from "@/layouts/AuthLayout";
 import StoreLayout from "@/layouts/StoreLayout";
 
 import Home from "@/pages/store/Home";
@@ -27,12 +28,14 @@ const customerOnly = (element) => (
 export default function StoreRoutes() {
   return (
     <Routes>
+      <Route element={<AuthLayout />}>
+        <Route path="login" element={<CustomerLogin />} />
+        <Route path="register" element={<Register />} />
+      </Route>
       <Route element={<StoreLayout />}>
         <Route index element={<Home />} />
         <Route path="products" element={<ProductList />} />
         <Route path="products/:id" element={<ProductDetail />} />
-        <Route path="login" element={<CustomerLogin />} />
-        <Route path="register" element={<Register />} />
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={customerOnly(<Checkout />)} />
         <Route path="orders" element={customerOnly(<Orders />)} />

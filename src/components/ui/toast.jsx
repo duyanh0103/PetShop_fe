@@ -56,29 +56,33 @@ function Toaster() {
   }
 
   return createPortal(
-    <div className="fixed right-4 top-4 z-[100] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2">
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed right-4 top-4 z-[100] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2"
+    >
       {toasts.map((toastItem) => (
         <div
           key={toastItem.id}
-          className="rounded-xl border border-border/70 bg-background/95 p-4 shadow-lg backdrop-blur"
+          className="rounded-2xl bg-[#13306e] px-4 py-3 text-white shadow-[0_12px_32px_rgba(19,48,110,0.25)] dark:bg-[#24406f]"
         >
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-full bg-emerald-100 p-1 text-emerald-600">
-              <CheckCircle2 className="size-4" />
+            <div className="mt-0.5 text-highlight">
+              <CheckCircle2 className="size-5" />
             </div>
 
             <div className="flex-1 space-y-1">
-              <p className="text-sm font-semibold text-foreground">{toastItem.title}</p>
+              <p className="font-bold">{toastItem.title}</p>
               {toastItem.description ? (
-                <p className="text-sm text-muted-foreground">{toastItem.description}</p>
+                <p className="text-sm text-white/80">{toastItem.description}</p>
               ) : null}
             </div>
 
             <button
               type="button"
               onClick={() => dismiss(toastItem.id)}
-              className="rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-              aria-label="Dismiss toast"
+              className="rounded-lg p-1 text-white/70 transition hover:bg-white/10 hover:text-white"
+              aria-label="Đóng thông báo"
             >
               <X className="size-4" />
             </button>

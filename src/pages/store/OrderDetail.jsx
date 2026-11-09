@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
+import logoSmall from "@/assets/brand/logo-128.webp";
+import PawIcon from "@/components/brand/PawIcon";
 import OrderStatusBadge from "@/components/store/OrderStatusBadge";
 import OrderSummary from "@/components/store/OrderSummary";
-import { ErrorState } from "@/components/store/ProductGrid";
+import { EmptyState, ErrorState } from "@/components/store/ProductGrid";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,6 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import useRemoteData from "@/hooks/useRemoteData";
 import { formatDateTime, formatPrice } from "@/lib/format";
+import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
+import { cn } from "@/lib/utils";
 import orderService from "@/services/orderService";
 
 import { ServerError } from "./auth/AuthCard";
@@ -43,13 +46,15 @@ function CancelOrderDialog({ order, open, onOpenChange, onCancelled }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Huỷ đơn hàng</DialogTitle>
-          <DialogDescription>Bạn có chắc muốn huỷ đơn {order.code}? Không thể hoàn tác thao tác này.</DialogDescription>
+          <DialogTitle>Huỷ đơn {order.code}?</DialogTitle>
+          <DialogDescription>
+            Đơn sẽ dừng xử lý và không thể khôi phục. Bạn có thể đặt lại bất cứ lúc nào.
+          </DialogDescription>
         </DialogHeader>
         <ServerError message={errorMessage} />
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
-            Giữ đơn hàng
+          <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={submitting}>
+            Giữ đơn
           </Button>
           <Button variant="destructive" onClick={handleConfirm} disabled={submitting}>
             {submitting ? "Đang huỷ..." : "Huỷ đơn"}
@@ -57,6 +62,42 @@ function CancelOrderDialog({ order, open, onOpenChange, onCancelled }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+const STEPS = ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED"];
+
+// Four bars filled up to the current status; a cancelled order greys the first.
+function StatusSteps({ status }) {
+  const cancelled = status === "CANCELLED";
+  const current = STEPS.indexOf(status);
+
+  return (
+    <ol className="flex flex-wrap gap-2 rounded-3xl border-[1.5px] border-border bg-card p-5" aria-label="Tiến trình đơn hàng">
+      {STEPS.map((step, index) => {
+        const reached = !cancelled && index <= current;
+        const isCurrent = cancelled ? index === 0 : index === current;
+
+        return (
+          <li
+            key={step}
+            className="flex flex-[1_1_140px] flex-col gap-2"
+            aria-current={isCurrent ? "step" : undefined}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                "h-2 rounded-full",
+                cancelled && index === 0 ? "bg-[#9aa6b8]" : reached ? "bg-primary" : "bg-pastel"
+              )}
+            />
+            <span className={cn("text-sm", isCurrent ? "font-extrabold text-foreground" : "font-semibold text-muted-foreground")}>
+              {cancelled && index === 0 ? ORDER_STATUS_LABELS.CANCELLED : ORDER_STATUS_LABELS[step]}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -72,81 +113,123 @@ export default function OrderDetail() {
   );
 
   if (loading) {
-    return <div className="mx-auto h-96 max-w-3xl animate-pulse rounded-xl bg-muted" />;
+    return <div className="skeleton mx-auto h-96 max-w-[1000px] rounded-3xl" />;
   }
 
   if (error?.status === 404) {
     return (
-      <div className="flex flex-col items-center gap-4 py-20 text-center">
-        <p className="text-muted-foreground">Không tìm thấy đơn hàng</p>
-        <Button asChild variant="outline">
-          <Link to="/orders">Về danh sách đơn hàng</Link>
-        </Button>
-      </div>
+      <EmptyState
+        title="Không tìm thấy đơn hàng"
+        action={
+          <Button asChild variant="outline">
+            <Link to="/orders">Về danh sách đơn hàng</Link>
+          </Button>
+        }
+      />
     );
   }
 
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (error) return <ErrorState title="Không tải được đơn hàng" message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto flex max-w-[1000px] flex-col gap-[18px]">
       {location.state?.justPlaced && order.status === "PENDING" ? (
-        <p role="status" className="flex items-center gap-2 rounded-xl bg-green-100 p-4 text-sm font-medium text-green-800 dark:bg-green-950 dark:text-green-300">
-          <CheckCircle2 className="size-5 shrink-0" />
-          Đặt hàng thành công! Shop sẽ liên hệ để xác nhận đơn.
-        </p>
+        <div role="status" className="flex flex-wrap items-center gap-[18px] rounded-[28px] bg-pastel px-6 py-[22px]">
+          <img src={logoSmall} alt="" width={92} height={92} className="object-contain" />
+          <div className="flex-[1_1_300px]">
+            <h1 className="text-[30px]">Đặt hàng thành công!</h1>
+            <p className="mt-1 text-body">Cục Meow sẽ gọi xác nhận sớm. Bạn chuẩn bị tiền mặt khi nhận hàng nhé.</p>
+          </div>
+          <Button asChild>
+            <Link to="/products">Tiếp tục mua sắm</Link>
+          </Button>
+        </div>
       ) : null}
+
+      <Link to="/orders" className="text-sm font-bold text-primary hover:underline">
+        ‹ Đơn của tôi
+      </Link>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Đơn {order.code}</h1>
-          <p className="text-sm text-muted-foreground">Đặt lúc {formatDateTime(order.createdAt)}</p>
+          <h2 className="text-[28px]">Đơn {order.code}</h2>
+          <p className="mt-0.5 text-muted-foreground">Đặt lúc {formatDateTime(order.createdAt)}</p>
         </div>
-        <OrderStatusBadge status={order.status} />
+        <div className="flex items-center gap-2.5">
+          <OrderStatusBadge status={order.status} />
+          {order.status === "PENDING" ? (
+            <Button variant="outline-destructive" onClick={() => setCancelOpen(true)}>
+              Huỷ đơn
+            </Button>
+          ) : null}
+        </div>
       </div>
 
-      <section className="space-y-1 rounded-xl border border-border p-4 text-sm">
-        <h2 className="mb-2 font-semibold">Thông tin giao hàng</h2>
-        <p>{order.shippingName} · {order.shippingPhone}</p>
-        <p className="text-muted-foreground">{order.shippingAddress}</p>
-        {order.note ? <p className="text-muted-foreground">Ghi chú: {order.note}</p> : null}
-        <p className="pt-2 text-muted-foreground">Thanh toán khi nhận hàng (COD)</p>
-      </section>
+      <StatusSteps status={order.status} />
 
-      <section className="rounded-xl border border-border">
-        <ul className="divide-y divide-border">
-          {order.items.map((item) => (
-            <li key={item.id} className="flex items-start justify-between gap-3 p-4 text-sm">
-              <div className="min-w-0">
-                {item.productId ? (
-                  <Link to={`/products/${item.productId}`} className="font-medium hover:underline">
-                    {item.productName}
-                  </Link>
-                ) : (
-                  <span className="font-medium">{item.productName}</span>
-                )}
-                <p className="text-muted-foreground">
-                  {formatPrice(item.unitPrice)} × {item.quantity}
-                </p>
-              </div>
-              <span className="shrink-0 font-medium">{formatPrice(item.lineTotal)}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="border-t border-border p-4">
-          <OrderSummary subtotal={order.subtotal} shippingFee={order.shippingFee} total={order.total} />
-        </div>
-      </section>
+      <div className="flex flex-wrap items-start gap-[18px]">
+        <section className="flex min-w-0 flex-[999_1_460px] flex-col gap-3.5 rounded-3xl border-[1.5px] border-border bg-card p-5">
+          <h3 className="text-xl">Sản phẩm</h3>
+          <ul className="flex flex-col gap-3.5">
+            {order.items.map((item) => {
+              const gone = !item.productId;
+              const detail = (
+                <>
+                  {item.productName}
+                  <br />
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    {formatPrice(item.unitPrice)} × {item.quantity}
+                    {gone ? " · Sản phẩm đã ngừng bán" : ""}
+                  </span>
+                </>
+              );
 
-      <div className="flex flex-wrap justify-between gap-3">
-        <Button asChild variant="outline">
-          <Link to="/orders">Về danh sách đơn hàng</Link>
-        </Button>
-        {order.status === "PENDING" ? (
-          <Button variant="destructive" onClick={() => setCancelOpen(true)}>
-            Huỷ đơn
-          </Button>
-        ) : null}
+              return (
+                <li key={item.id} className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "flex size-14 shrink-0 items-center justify-center rounded-xl",
+                      gone ? "bg-status-cancelled text-status-cancelled-foreground" : "bg-tile text-tile-icon"
+                    )}
+                  >
+                    <PawIcon size={22} />
+                  </span>
+                  {gone ? (
+                    <span className="min-w-0 flex-1 leading-snug font-bold text-status-cancelled-foreground">{detail}</span>
+                  ) : (
+                    <Link to={`/products/${item.productId}`} className="min-w-0 flex-1 leading-snug font-bold text-foreground hover:underline">
+                      {detail}
+                    </Link>
+                  )}
+                  <b className="whitespace-nowrap">{formatPrice(item.lineTotal)}</b>
+                </li>
+              );
+            })}
+          </ul>
+          <OrderSummary
+            subtotal={order.subtotal}
+            shippingFee={order.shippingFee}
+            total={order.total}
+            totalLabel="Tổng cộng (COD)"
+          />
+        </section>
+
+        <section className="flex flex-[1_1_280px] flex-col gap-2.5 rounded-3xl border-[1.5px] border-border bg-card p-5">
+          <h3 className="text-xl">Giao hàng</h3>
+          <p className="leading-relaxed">
+            <b>{order.shippingName}</b>
+            <br />
+            {order.shippingPhone}
+            <br />
+            {order.shippingAddress}
+          </p>
+          {order.note ? (
+            <p className="rounded-xl bg-muted px-3 py-2.5 text-sm">
+              <b>Ghi chú:</b> {order.note}
+            </p>
+          ) : null}
+          <p className="text-sm text-muted-foreground">Thanh toán khi nhận hàng</p>
+        </section>
       </div>
 
       <CancelOrderDialog

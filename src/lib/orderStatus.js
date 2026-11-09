@@ -6,3 +6,5 @@ export const ORDER_STATUS_OPTIONS = [
   ["COMPLETED", "Hoàn thành"],
   ["CANCELLED", "Đã huỷ"],
 ];
+
+export const ORDER_STATUS_LABELS = Object.fromEntries(ORDER_STATUS_OPTIONS);

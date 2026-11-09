@@ -1,10 +1,11 @@
 import { SearchX } from "lucide-react";
 
+import PawIcon from "@/components/brand/PawIcon";
 import { Button } from "@/components/ui/button";
 
 import ProductCard, { ProductCardSkeleton } from "./ProductCard";
 
-const gridClassName = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
+const gridClassName = "grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3.5";
 
 /**
  * Product grid with the three list states from the design spec:
@@ -29,20 +30,23 @@ export default function ProductGrid({
   }
 
   if (error) {
-    return <ErrorState message={error.message} onRetry={onRetry} />;
+    return <ErrorState title="Không tải được sản phẩm" message={error.message} onRetry={onRetry} />;
   }
 
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-        <SearchX className="size-10 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Không tìm thấy sản phẩm phù hợp</p>
-        {onReset ? (
-          <Button variant="outline" onClick={onReset}>
-            Xoá bộ lọc
-          </Button>
-        ) : null}
-      </div>
+      <EmptyState
+        icon={<SearchX className="size-7" />}
+        title="Không tìm thấy sản phẩm phù hợp"
+        message="Thử từ khoá khác hoặc bỏ bớt bộ lọc nhé."
+        action={
+          onReset ? (
+            <Button variant="secondary" onClick={onReset}>
+              Xoá bộ lọc
+            </Button>
+          ) : null
+        }
+      />
     );
   }
 
@@ -55,12 +59,29 @@ export default function ProductGrid({
   );
 }
 
-export function ErrorState({ message, onRetry }) {
+export function EmptyState({ icon, title, message, action }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-border py-16 text-center">
-      <p className="text-sm text-destructive">{message}</p>
+    <div className="flex flex-col items-center gap-2.5 rounded-[20px] border-[1.5px] border-border bg-card px-5 py-12 text-center">
+      <div className="flex size-16 items-center justify-center rounded-full bg-pastel text-primary">
+        {icon ?? <PawIcon size={30} />}
+      </div>
+      <p className="font-heading text-[22px] font-extrabold">{title}</p>
+      {message ? <p className="text-muted-foreground">{message}</p> : null}
+      {action}
+    </div>
+  );
+}
+
+export function ErrorState({ title = "Không tải được dữ liệu", message, onRetry }) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-col items-center gap-2.5 rounded-[20px] border-[1.5px] border-[#f3c4c8] bg-danger-soft px-5 py-12 text-center dark:border-[#6b2e3a]"
+    >
+      <p className="font-bold text-danger-text">{title}</p>
+      {message ? <p className="text-sm text-body">{message}</p> : null}
       {onRetry ? (
-        <Button variant="outline" onClick={onRetry}>
+        <Button variant="outline-destructive" onClick={onRetry}>
           Thử lại
         </Button>
       ) : null}

@@ -1,4 +1,3 @@
-import { X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import SimplePagination from "@/components/store/SimplePagination";
@@ -28,8 +27,7 @@ function CategoryFilter({ categories, selected, onSelect }) {
 
   return (
     <nav aria-label="Lọc theo danh mục">
-      {/* Mobile: horizontal chips. Desktop: vertical list. */}
-      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0">
+      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
         {options.map((category) => {
           const isActive = category.slug === selected;
 
@@ -38,12 +36,12 @@ function CategoryFilter({ categories, selected, onSelect }) {
               <button
                 type="button"
                 onClick={() => onSelect(category.slug)}
-                aria-current={isActive ? "true" : undefined}
+                aria-pressed={isActive}
                 className={cn(
-                  "w-full rounded-full border px-3 py-1.5 text-left text-sm transition-colors lg:rounded-lg lg:border-transparent",
+                  "h-10 rounded-full border-[1.5px] px-4 text-sm font-bold transition-colors",
                   isActive
-                    ? "border-foreground bg-foreground text-background lg:bg-muted lg:text-foreground lg:font-medium"
-                    : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-input bg-card text-foreground hover:bg-muted"
                 )}
               >
                 {category.name}
@@ -88,20 +86,38 @@ export default function ProductList() {
 
   const activeCategory = categories.find((item) => item.slug === category);
 
+  const title = search ? `Kết quả cho “${search}”` : (activeCategory?.name ?? "Sản phẩm");
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">{activeCategory?.name ?? "Sản phẩm"}</h1>
+          <h1 className="text-[34px]">{title}</h1>
           {!loading && !error ? (
-            <p className="text-sm text-muted-foreground">{pagination.total} sản phẩm</p>
+            <p className="mt-1 text-muted-foreground">
+              {pagination.total} sản phẩm
+              {search ? (
+                <>
+                  {" · "}
+                  <button
+                    type="button"
+                    onClick={() => updateParams({ search: "" })}
+                    className="font-bold text-primary hover:underline"
+                  >
+                    Xoá từ khoá
+                  </button>
+                </>
+              ) : null}
+            </p>
           ) : null}
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Sắp xếp</span>
+        <div className="flex items-center gap-2">
+          <span id="sort-label" className="text-sm font-bold">
+            Sắp xếp
+          </span>
           <Select value={sort} onValueChange={(value) => updateParams({ sort: value === "newest" ? "" : value })}>
-            <SelectTrigger className="w-40" aria-label="Sắp xếp">
+            <SelectTrigger className="w-44 rounded-full" aria-labelledby="sort-label">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -115,47 +131,26 @@ export default function ProductList() {
         </div>
       </div>
 
-      {search ? (
-        <div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-muted py-1 pr-1 pl-3 text-sm">
-            Kết quả cho “{search}”
-            <button
-              type="button"
-              onClick={() => updateParams({ search: "" })}
-              className="rounded-full p-1 hover:bg-background"
-              aria-label="Xoá từ khoá tìm kiếm"
-            >
-              <X className="size-3.5" />
-            </button>
-          </span>
-        </div>
-      ) : null}
+      <CategoryFilter
+        categories={categories}
+        selected={category}
+        onSelect={(slug) => updateParams({ category: slug })}
+      />
 
-      <div className="grid gap-6 lg:grid-cols-[200px_1fr]">
-        <aside>
-          <CategoryFilter
-            categories={categories}
-            selected={category}
-            onSelect={(slug) => updateParams({ category: slug })}
-          />
-        </aside>
-
-        <div className="space-y-6">
-          <ProductGrid
-            products={products}
-            loading={loading}
-            error={error}
-            onRetry={refetch}
-            onReset={category || search ? () => setSearchParams({}) : undefined}
-            skeletonCount={PAGE_SIZE}
-          />
-          <SimplePagination
-            page={page}
-            totalPages={pagination.totalPages}
-            onPageChange={(nextPage) => updateParams({ page: nextPage > 1 ? String(nextPage) : "" })}
-          />
-        </div>
-      </div>
+      <ProductGrid
+        products={products}
+        loading={loading}
+        error={error}
+        onRetry={refetch}
+        onReset={category || search ? () => setSearchParams({}) : undefined}
+        skeletonCount={PAGE_SIZE}
+      />
+      <SimplePagination
+        className="mt-3"
+        page={page}
+        totalPages={pagination.totalPages}
+        onPageChange={(nextPage) => updateParams({ page: nextPage > 1 ? String(nextPage) : "" })}
+      />
     </div>
   );
 }

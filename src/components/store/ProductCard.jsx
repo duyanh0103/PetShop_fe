@@ -1,6 +1,7 @@
-import { PawPrint } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import PawIcon from "@/components/brand/PawIcon";
+import StatusBadge from "@/components/common/StatusBadge";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -10,9 +11,9 @@ export default function ProductCard({ product }) {
   return (
     <Link
       to={`/products/${product.id}`}
-      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="group flex flex-col gap-1.5 rounded-[20px] border-[1.5px] border-border bg-card p-2.5 text-foreground transition-colors hover:border-[#8cc2fa] focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-[14px] bg-tile">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
@@ -20,44 +21,38 @@ export default function ProductCard({ product }) {
             loading="lazy"
             className={cn(
               "h-full w-full object-cover transition-transform duration-300 group-hover:scale-105",
-              outOfStock && "opacity-60"
+              outOfStock && "opacity-45"
             )}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <PawPrint className="size-12" />
+          <div className={cn("flex h-full w-full items-center justify-center text-tile-icon", outOfStock && "opacity-45")}>
+            <PawIcon size={44} />
           </div>
         )}
 
         {outOfStock ? (
-          <span className="absolute top-2 left-2 rounded-md bg-foreground/80 px-2 py-0.5 text-xs font-medium text-background">
+          <StatusBadge tone="oos" dot={false} className="absolute bottom-2 left-2 text-xs">
             Hết hàng
-          </span>
+          </StatusBadge>
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        {product.category ? (
-          <span className="text-xs text-muted-foreground">{product.category.name}</span>
-        ) : null}
-        <h3 className="line-clamp-2 text-sm font-medium text-foreground">{product.name}</h3>
-        <p className="mt-auto pt-1 text-base font-semibold text-foreground">
-          {formatPrice(product.price)}
-        </p>
-      </div>
+      {product.category ? (
+        <span className="text-xs font-bold text-muted-foreground">{product.category.name}</span>
+      ) : null}
+      <h3 className="line-clamp-2 min-h-10 font-sans text-[15px] leading-[1.35] font-bold">{product.name}</h3>
+      <p className="mt-auto text-base font-extrabold text-primary">{formatPrice(product.price)}</p>
     </Link>
   );
 }
 
 export function ProductCardSkeleton() {
   return (
-    <div className="flex animate-pulse flex-col overflow-hidden rounded-xl border border-border">
-      <div className="aspect-square bg-muted" />
-      <div className="space-y-2 p-3">
-        <div className="h-3 w-1/3 rounded bg-muted" />
-        <div className="h-4 w-full rounded bg-muted" />
-        <div className="h-4 w-1/2 rounded bg-muted" />
-      </div>
+    <div className="flex flex-col gap-2.5 rounded-[20px] border-[1.5px] border-border bg-card p-2.5">
+      <div className="skeleton aspect-square rounded-[14px]" />
+      <div className="skeleton h-3.5 w-1/2" />
+      <div className="skeleton h-3.5" />
+      <div className="skeleton h-3.5 w-2/5" />
     </div>
   );
 }
