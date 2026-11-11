@@ -106,6 +106,7 @@ export default function CategoryFormFields({
           <ImageUrlField
             control={control}
             id="category-image-url"
+            label="Ảnh danh mục"
             error={errors.imageUrl}
             disabled={disabled}
           />

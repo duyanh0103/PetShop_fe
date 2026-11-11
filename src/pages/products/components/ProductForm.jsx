@@ -7,7 +7,6 @@ export default function ProductForm({
   onSubmit,
   onCancel,
   loading = false,
-  products = [],
   categories = [],
   isEditMode = false,
   submitLabel = "Save Product",
@@ -21,7 +20,6 @@ export default function ProductForm({
     defaultValues,
     onSubmit,
     loading,
-    products,
     categories,
     isEditMode,
   });

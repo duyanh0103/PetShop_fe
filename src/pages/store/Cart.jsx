@@ -13,6 +13,7 @@ import useAuthStore from "@/store/authStore";
 import useCartStore, { selectCartCount } from "@/store/cartStore";
 
 import useCartQuote from "./hooks/useCartQuote";
+import { imageUrl } from "@/lib/image";
 
 function CartLine({ item, line, onQuantityChange, onRemove }) {
   const unavailable = line?.status === "UNAVAILABLE";
@@ -32,7 +33,7 @@ function CartLine({ item, line, onQuantityChange, onRemove }) {
           className={cn("size-[84px] shrink-0 overflow-hidden rounded-[14px] bg-tile", unavailable && "opacity-45")}
         >
           {item.imageUrl ? (
-            <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+            <img src={imageUrl(item.imageUrl, 200)} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-tile-icon">
               <PawIcon size={32} />

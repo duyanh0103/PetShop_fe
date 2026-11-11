@@ -198,6 +198,7 @@ export default function ProductFormFields({
           <ImageUrlField
             control={control}
             id="product-image-url"
+            label="Ảnh sản phẩm"
             error={errors.imageUrl}
             disabled={disabled}
           />

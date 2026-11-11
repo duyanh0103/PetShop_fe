@@ -19,6 +19,12 @@ function toQueryParams({ page, limit, search, categoryId, isActive, sortBy, sort
 }
 
 export const productService = {
+  // Next free "PREFIX-0001" SKU, counted by the API across every product.
+  async getNextSku(prefix, { signal } = {}) {
+    const response = await api.get("/products/next-sku", { params: { prefix }, signal });
+    return response.data.data.sku;
+  },
+
   async getProducts(query) {
     const response = await api.get("/products", {
       params: toQueryParams(query),

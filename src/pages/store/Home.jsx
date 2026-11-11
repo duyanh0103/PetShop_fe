@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import logoLarge from "@/assets/brand/logo-512.webp";
 
 import { usePublicCategories, usePublicProducts } from "./hooks/useStoreCatalog";
+import { imageUrl } from "@/lib/image";
 
 const NEWEST_PARAMS = { sort: "newest", limit: 8 };
 
@@ -38,7 +39,7 @@ function CategoryGrid() {
               className="flex flex-col items-center gap-2.5 rounded-[20px] border-[1.5px] border-border bg-card p-4 text-center font-bold text-foreground transition-colors hover:border-[#8cc2fa]"
             >
               {category.imageUrl ? (
-                <img src={category.imageUrl} alt="" className="size-[72px] rounded-full object-cover" />
+                <img src={imageUrl(category.imageUrl, 160)} alt="" className="size-[72px] rounded-full object-cover" />
               ) : (
                 <span
                   className="flex size-[72px] items-center justify-center rounded-full text-primary"

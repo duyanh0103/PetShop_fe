@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { Edit3, Trash2 } from "lucide-react";
+import { imageUrl } from "@/lib/image";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("vi-VN", {
@@ -67,7 +68,7 @@ export default function ProductTable({
                     <div className="flex items-center gap-3">
                       {product.imageUrl ? (
                         <img
-                          src={product.imageUrl}
+                          src={imageUrl(product.imageUrl, 120)}
                           alt={product.name}
                           className="h-12 w-12 rounded-lg object-cover"
                         />

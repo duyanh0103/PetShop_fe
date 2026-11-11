@@ -15,6 +15,7 @@ import useCartStore from "@/store/cartStore";
 import { FormField, ServerError } from "./auth/AuthCard";
 import checkoutSchema from "./checkoutSchema";
 import useCartQuote from "./hooks/useCartQuote";
+import { imageUrl } from "@/lib/image";
 
 const FORM_FIELDS = new Set(["shippingName", "shippingPhone", "shippingAddress", "note"]);
 
@@ -161,7 +162,7 @@ export default function Checkout() {
                     <li key={line.productId} className="flex items-start gap-3">
                       <span className="relative size-12 shrink-0 rounded-xl bg-tile">
                         {cartItem?.imageUrl ? (
-                          <img src={cartItem.imageUrl} alt="" className="h-full w-full rounded-xl object-cover" />
+                          <img src={imageUrl(cartItem.imageUrl, 120)} alt="" className="h-full w-full rounded-xl object-cover" />
                         ) : (
                           <span className="flex h-full w-full items-center justify-center text-tile-icon">
                             <PawIcon size={20} />

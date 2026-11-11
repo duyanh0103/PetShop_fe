@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { Edit3, Trash2 } from "lucide-react";
+import { imageUrl } from "@/lib/image";
 
 function getStatusBadge(isActive) {
   return isActive
@@ -47,7 +48,7 @@ export default function CategoryTable({
                   <div className="flex items-center gap-3">
                     {category.imageUrl ? (
                       <img
-                        src={category.imageUrl}
+                        src={imageUrl(category.imageUrl, 120)}
                         alt={category.name}
                         className="h-12 w-12 rounded-lg object-cover"
                       />

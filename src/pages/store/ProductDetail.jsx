@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/format";
 import useCartStore from "@/store/cartStore";
 
 import { usePublicProduct } from "./hooks/useStoreCatalog";
+import { imageUrl } from "@/lib/image";
 
 function DetailSkeleton() {
   return (
@@ -105,7 +106,7 @@ function ProductDetailContent({ id }) {
       <div className="flex flex-wrap items-start gap-8">
         <div className="aspect-square w-full max-w-[520px] flex-[1_1_380px] overflow-hidden rounded-[28px] bg-pastel">
           {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+            <img src={imageUrl(product.imageUrl, 900)} alt={product.name} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-[#8cc2fa]">
               <PawIcon size={120} />

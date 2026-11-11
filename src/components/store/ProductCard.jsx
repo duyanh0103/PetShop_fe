@@ -4,6 +4,7 @@ import PawIcon from "@/components/brand/PawIcon";
 import StatusBadge from "@/components/common/StatusBadge";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { imageUrl } from "@/lib/image";
 
 export default function ProductCard({ product }) {
   const outOfStock = !product.inStock;
@@ -16,7 +17,7 @@ export default function ProductCard({ product }) {
       <div className="relative aspect-square overflow-hidden rounded-[14px] bg-tile">
         {product.imageUrl ? (
           <img
-            src={product.imageUrl}
+            src={imageUrl(product.imageUrl, 400)}
             alt={product.name}
             loading="lazy"
             className={cn(

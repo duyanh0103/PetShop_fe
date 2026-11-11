@@ -2,7 +2,8 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 
 import productSchema from "@/pages/products/schemas/productSchema";
-import { generateSku } from "@/pages/products/utils/generateSku";
+import productService from "@/pages/products/services/productService";
+import { getCategoryCode } from "@/pages/products/utils/generateSku";
 import { zodResolver } from "@/lib/zodResolver";
 
 const defaultProductFormValues = {
@@ -43,7 +44,6 @@ export function useProductForm({
   defaultValues,
   onSubmit,
   loading = false,
-  products = [],
   categories = [],
   isEditMode = false,
 }) {
@@ -62,7 +62,7 @@ export function useProductForm({
     mode: "onTouched",
   });
 
-  const { reset, setValue, handleSubmit, control, register, formState, watch } = form;
+  const { reset, setValue, getValues, handleSubmit, control, register, formState, watch } = form;
 
   useEffect(() => {
     reset(normalizedDefaultValues);
@@ -71,28 +71,34 @@ export function useProductForm({
   const categoryIdValue = watch("categoryId");
   const skuValue = watch("sku");
 
-  // Best-effort SKU suggestion only — the backend is the source of truth for
-  // uniqueness (a 409 "SKU already exists" surfaces on submit if this guess
-  // collides, e.g. because `products` here is only the current page).
+  // Suggest the next free SKU for the chosen category. The API counts every
+  // product; the unique index still has the last word (409 on submit).
   useEffect(() => {
-    if (isEditMode) {
-      return;
-    }
-
-    if (skuValue && skuValue.trim().length > 0) {
-      return;
+    if (isEditMode || (skuValue && skuValue.trim().length > 0)) {
+      return undefined;
     }
 
     const selectedCategory = categories.find((category) => category.id === categoryIdValue);
-    const suggestedSku = generateSku(selectedCategory?.name, products);
-
-    if (suggestedSku) {
-      setValue("sku", suggestedSku, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
+    if (!selectedCategory) {
+      return undefined;
     }
-  }, [categoryIdValue, categories, isEditMode, products, setValue, skuValue]);
+
+    const controller = new AbortController();
+
+    productService
+      .getNextSku(getCategoryCode(selectedCategory.name), { signal: controller.signal })
+      .then((suggestedSku) => {
+        // The admin may have typed a SKU while the request was in flight.
+        if (!getValues("sku")?.trim()) {
+          setValue("sku", suggestedSku, { shouldDirty: true, shouldValidate: true });
+        }
+      })
+      .catch(() => {
+        // A suggestion is optional; the admin can always type one.
+      });
+
+    return () => controller.abort();
+  }, [categoryIdValue, categories, getValues, isEditMode, setValue, skuValue]);
 
   const submitHandler = handleSubmit(async (values) => {
     const normalizedValues = {
