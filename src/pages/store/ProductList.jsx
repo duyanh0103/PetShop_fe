@@ -23,10 +23,25 @@ const SORT_OPTIONS = [
 ];
 
 function CategoryFilter({ categories, selected, onSelect }) {
-  const options = [{ slug: "", name: "Tất cả" }, ...categories];
+  const brands = categories.filter((category) => category.type === "BRAND");
+  const options = [
+    { slug: "", name: "Tất cả" },
+    ...categories.filter((category) => category.type !== "BRAND"),
+  ];
 
   return (
-    <nav aria-label="Lọc theo danh mục">
+    <div className="space-y-2">
+      <FilterRow label="Lọc theo danh mục" options={options} selected={selected} onSelect={onSelect} />
+      {brands.length > 0 ? (
+        <FilterRow label="Lọc theo thương hiệu" options={brands} selected={selected} onSelect={onSelect} />
+      ) : null}
+    </div>
+  );
+}
+
+function FilterRow({ label, options, selected, onSelect }) {
+  return (
+    <nav aria-label={label}>
       <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
         {options.map((category) => {
           const isActive = category.slug === selected;

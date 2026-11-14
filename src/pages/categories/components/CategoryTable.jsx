@@ -28,6 +28,7 @@ export default function CategoryTable({
         <TableHeader>
           <TableRow>
             <TableHead className="w-[320px]">Danh mục</TableHead>
+            <TableHead>Loại</TableHead>
             <TableHead>Mô tả</TableHead>
             <TableHead>Sản phẩm</TableHead>
             <TableHead>Trạng thái</TableHead>
@@ -37,7 +38,7 @@ export default function CategoryTable({
         <TableBody>
           {categories.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center text-sm text-slate-500">
+              <TableCell colSpan={6} className="h-24 text-center text-sm text-slate-500">
                 Không có dữ liệu
               </TableCell>
             </TableRow>
@@ -63,6 +64,7 @@ export default function CategoryTable({
                     </div>
                   </div>
                 </TableCell>
+                <TableCell>{category.type === "BRAND" ? "Thương hiệu" : "Danh mục"}</TableCell>
                 <TableCell className="max-w-[320px] truncate text-sm text-slate-600">
                   {category.description || "—"}
                 </TableCell>

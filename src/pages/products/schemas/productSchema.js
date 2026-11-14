@@ -13,7 +13,8 @@ const productSchema = z.object({
     .min(3, "SKU phải có từ 3 đến 30 ký tự.")
     .max(30, "SKU phải có từ 3 đến 30 ký tự.")
     .regex(/^[A-Z0-9-]+$/, "Chỉ được dùng chữ hoa (A-Z), số (0-9) và dấu gạch ngang (-)."),
-  categoryId: z.string().uuid("Vui lòng chọn danh mục"),
+  // First selected id is the primary category.
+  categoryIds: z.array(z.string().uuid()).min(1, "Vui lòng chọn ít nhất 1 danh mục").max(10, "Tối đa 10 danh mục"),
   price: z.preprocess(
     (value) => {
       if (value === "" || value === null || value === undefined) {

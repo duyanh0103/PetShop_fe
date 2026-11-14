@@ -9,7 +9,7 @@ import { zodResolver } from "@/lib/zodResolver";
 const defaultProductFormValues = {
   productName: "",
   sku: "",
-  categoryId: "",
+  categoryIds: [],
   price: 0,
   quantity: 0,
   description: "",
@@ -68,7 +68,7 @@ export function useProductForm({
     reset(normalizedDefaultValues);
   }, [defaultValuesKey, normalizedDefaultValues, reset]);
 
-  const categoryIdValue = watch("categoryId");
+  const categoryIdsValue = watch("categoryIds");
   const skuValue = watch("sku");
 
   // Suggest the next free SKU for the chosen category. The API counts every
@@ -78,7 +78,11 @@ export function useProductForm({
       return undefined;
     }
 
-    const selectedCategory = categories.find((category) => category.id === categoryIdValue);
+    // Prefix the SKU from a real category (not a brand) when one is selected.
+    const selected = (categoryIdsValue ?? [])
+      .map((id) => categories.find((category) => category.id === id))
+      .filter(Boolean);
+    const selectedCategory = selected.find((category) => category.type !== "BRAND") ?? selected[0];
     if (!selectedCategory) {
       return undefined;
     }
@@ -98,7 +102,7 @@ export function useProductForm({
       });
 
     return () => controller.abort();
-  }, [categoryIdValue, categories, getValues, isEditMode, setValue, skuValue]);
+  }, [categoryIdsValue, categories, getValues, isEditMode, setValue, skuValue]);
 
   const submitHandler = handleSubmit(async (values) => {
     const normalizedValues = {

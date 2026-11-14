@@ -54,7 +54,7 @@ export default function Products() {
       const payload = {
         name: data.productName,
         sku: data.sku,
-        categoryId: data.categoryId,
+        categoryIds: data.categoryIds,
         price: data.price,
         quantity: data.quantity,
         description: data.description,
@@ -122,7 +122,7 @@ export default function Products() {
           id: selectedProduct.id,
           productName: selectedProduct.name,
           sku: selectedProduct.sku,
-          categoryId: selectedProduct.categoryId,
+          categoryIds: selectedProduct.categoryIds ?? [selectedProduct.categoryId],
           price: selectedProduct.price,
           quantity: selectedProduct.quantity,
           description: selectedProduct.description ?? "",

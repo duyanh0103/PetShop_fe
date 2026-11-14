@@ -115,10 +115,18 @@ function ProductDetailContent({ id }) {
         </div>
 
         <div className="flex min-w-0 flex-[1_1_380px] flex-col gap-4">
-          {product.category ? (
-            <span className="self-start rounded-full bg-status-pending px-3 py-1 text-[13px] font-extrabold text-status-pending-foreground">
-              {product.category.name}
-            </span>
+          {product.categories?.length ? (
+            <div className="flex flex-wrap gap-2">
+              {product.categories.map((category) => (
+                <Link
+                  key={category.id}
+                  to={`/products?category=${category.slug}`}
+                  className="rounded-full bg-status-pending px-3 py-1 text-[13px] font-extrabold text-status-pending-foreground no-underline"
+                >
+                  {category.name}
+                </Link>
+              ))}
+            </div>
           ) : null}
           <h1 className="text-[28px] sm:text-[34px]">{product.name}</h1>
           <p className="text-sm text-muted-foreground">

@@ -112,31 +112,46 @@ export default function ProductFormFields({
 
         <Controller
           control={control}
-          name="categoryId"
-          render={({ field }) => (
-            <div className="space-y-2">
-              <FormLabel htmlFor="product-category" required>
-                Danh mục
-              </FormLabel>
-              <Select
-                value={field.value || ""}
-                onValueChange={field.onChange}
-                disabled={disabled}
-              >
-                <SelectTrigger id="product-category" className="h-10 w-full">
-                  <SelectValue placeholder="Chọn danh mục" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
-                      {option.name}
-                    </SelectItem>
+          name="categoryIds"
+          render={({ field }) => {
+            const selected = field.value ?? [];
+            const toggle = (id) =>
+              field.onChange(selected.includes(id) ? selected.filter((value) => value !== id) : [...selected, id]);
+            const groups = [
+              { label: "Danh mục", items: categories.filter((option) => option.type !== "BRAND") },
+              { label: "Thương hiệu", items: categories.filter((option) => option.type === "BRAND") },
+            ].filter((group) => group.items.length > 0);
+
+            return (
+              <div className="space-y-2 lg:col-span-2">
+                <FormLabel required>Danh mục / thương hiệu</FormLabel>
+                <div className="space-y-3 rounded-lg border border-border p-3">
+                  {groups.map((group) => (
+                    <div key={group.label}>
+                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">{group.label}</p>
+                      <div className="flex flex-wrap gap-x-5 gap-y-2">
+                        {group.items.map((option) => (
+                          <label key={option.id} className="flex items-center gap-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={selected.includes(option.id)}
+                              onChange={() => toggle(option.id)}
+                              disabled={disabled}
+                            />
+                            {option.name}
+                            {selected[0] === option.id && selected.length > 1 ? (
+                              <span className="text-xs text-slate-400">(chính)</span>
+                            ) : null}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
-              <FieldError message={errors.categoryId?.message} />
-            </div>
-          )}
+                </div>
+                <FieldError message={errors.categoryIds?.message} />
+              </div>
+            );
+          }}
         />
 
         <Controller

@@ -32,7 +32,7 @@ function CategoryGrid() {
     <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3.5">
       {loading
         ? Array.from({ length: 6 }, (_, index) => <div key={index} className="skeleton h-[138px] rounded-[20px]" />)
-        : categories.map((category, index) => (
+        : categories.filter((category) => category.type !== "BRAND").map((category, index) => (
             <Link
               key={category.id}
               to={`/products?category=${category.slug}`}

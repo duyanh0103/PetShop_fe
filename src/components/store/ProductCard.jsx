@@ -38,8 +38,10 @@ export default function ProductCard({ product }) {
         ) : null}
       </div>
 
-      {product.category ? (
-        <span className="text-xs font-bold text-muted-foreground">{product.category.name}</span>
+      {product.categories?.length || product.category ? (
+        <span className="line-clamp-1 text-xs font-bold text-muted-foreground">
+          {(product.categories?.length ? product.categories : [product.category]).map((category) => category.name).join(" · ")}
+        </span>
       ) : null}
       <h3 className="line-clamp-2 min-h-10 font-sans text-[15px] leading-[1.35] font-bold">{product.name}</h3>
       <p className="mt-auto text-base font-extrabold text-primary">{formatPrice(product.price)}</p>

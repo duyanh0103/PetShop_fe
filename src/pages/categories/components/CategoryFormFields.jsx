@@ -81,6 +81,25 @@ export default function CategoryFormFields({
 
         <Controller
           control={control}
+          name="type"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <FormLabel htmlFor="category-type">Loại</FormLabel>
+              <Select value={field.value || "CATEGORY"} onValueChange={field.onChange} disabled={disabled}>
+                <SelectTrigger id="category-type" className="h-10 w-full">
+                  <SelectValue placeholder="Chọn loại" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CATEGORY">Danh mục</SelectItem>
+                  <SelectItem value="BRAND">Thương hiệu</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        />
+
+        <Controller
+          control={control}
           name="isActive"
           render={({ field }) => (
             <div className="space-y-2">

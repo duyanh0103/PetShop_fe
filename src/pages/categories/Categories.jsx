@@ -105,6 +105,7 @@ export default function Categories() {
           description: selectedCategory.description ?? "",
           imageUrl: selectedCategory.imageUrl ?? "",
           sortOrder: selectedCategory.sortOrder ?? 0,
+          type: selectedCategory.type ?? "CATEGORY",
           isActive: selectedCategory.isActive,
         } : undefined}
         onSubmit={handleSubmitCategory}

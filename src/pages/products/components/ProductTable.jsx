@@ -83,7 +83,24 @@ export default function ProductTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{product.category?.name ?? "—"}</TableCell>
+                  <TableCell>
+                    {product.categories?.length ? (
+                      <div className="flex flex-wrap gap-1">
+                        {product.categories.map((category) => (
+                          <span
+                            key={category.id}
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                              category.type === "BRAND" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            {category.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
                   <TableCell>{formatPrice(product.price)}</TableCell>
                   <TableCell>{product.quantity}</TableCell>
                   <TableCell>

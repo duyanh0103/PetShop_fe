@@ -12,6 +12,7 @@ const defaultCategoryFormValues = {
   description: "",
   imageUrl: "",
   sortOrder: 0,
+  type: "CATEGORY",
   isActive: true,
 };
 

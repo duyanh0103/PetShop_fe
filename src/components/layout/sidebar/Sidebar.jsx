@@ -1,5 +1,7 @@
 import { NavLink } from "react-router-dom";
 
+import logoSmall from "@/assets/brand/logo-128.webp";
+import { BRAND_NAME } from "@/components/brand/BrandLogo";
 import {
   Tooltip,
   TooltipContent,
@@ -29,13 +31,11 @@ export default function Sidebar({ isCollapsed = false }) {
     <aside className="flex h-full w-full flex-col overflow-hidden bg-white">
       <div className="flex h-16 items-center justify-between border-b border-border px-4">
         <div className={cn("flex min-w-0 items-center gap-3", isCollapsed && "justify-center")}> 
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-sm font-semibold text-white">
-            P
-          </div>
+          <img src={logoSmall} alt={BRAND_NAME} width={40} height={40} className="shrink-0 object-contain" />
 
           {!isCollapsed && (
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900">PetShop</p>
+              <p className="truncate text-sm font-semibold text-slate-900">{BRAND_NAME}</p>
               <p className="truncate text-xs text-slate-500">Quản trị viên</p>
             </div>
           )}

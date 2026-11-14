@@ -19,6 +19,7 @@ const categorySchema = z.object({
     const parsed = Number(value);
     return Number.isNaN(parsed) ? value : parsed;
   }, z.number({ error: "Thứ tự sắp xếp phải là số" }).int("Thứ tự sắp xếp phải là số nguyên")),
+  type: z.enum(["CATEGORY", "BRAND"]).default("CATEGORY"),
   isActive: z.boolean().default(true),
 });
 
