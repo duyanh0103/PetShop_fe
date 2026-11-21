@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Download, Plus, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,9 @@ export default function ProductToolbar({
   onCategoryChange,
   onStatusChange,
   onAddProduct,
+  onImport,
+  onExport,
+  exporting = false,
 }) {
   return (
     <section className="rounded-xl border border-border/60 bg-background/95 p-4 shadow-sm sm:p-5">
@@ -38,14 +41,20 @@ export default function ProductToolbar({
           </p>
         </div>
 
-        <Button
-          type="button"
-          onClick={onAddProduct}
-          className="h-10 gap-2 self-start lg:self-auto"
-        >
-          <Plus className="size-4" />
-          Thêm sản phẩm
-        </Button>
+        <div className="flex flex-wrap gap-2 self-start lg:self-auto">
+          <Button type="button" variant="outline" onClick={onImport} className="h-10 gap-2">
+            <Upload className="size-4" />
+            Nhập Excel
+          </Button>
+          <Button type="button" variant="outline" onClick={onExport} disabled={exporting} className="h-10 gap-2">
+            <Download className="size-4" />
+            {exporting ? "Đang xuất..." : "Xuất Excel"}
+          </Button>
+          <Button type="button" onClick={onAddProduct} className="h-10 gap-2">
+            <Plus className="size-4" />
+            Thêm sản phẩm
+          </Button>
+        </div>
       </div>
 
       <div className="mt-5 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">

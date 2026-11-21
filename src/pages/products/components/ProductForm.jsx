@@ -20,7 +20,6 @@ export default function ProductForm({
     defaultValues,
     onSubmit,
     loading,
-    categories,
     isEditMode,
   });
 

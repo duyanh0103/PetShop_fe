@@ -101,12 +101,18 @@ export default function ProductFormFields({
           <Input
             id="product-sku"
             type="text"
-            placeholder="Nhập SKU"
+            placeholder="VD: BOW70_GTD_1"
             disabled={disabled || isEditMode}
             readOnly={isEditMode}
             aria-invalid={Boolean(errors.sku)}
+            aria-describedby="product-sku-hint"
             {...register("sku")}
           />
+          {!isEditMode && (
+            <p id="product-sku-hint" className="text-xs text-muted-foreground">
+              Mã dòng + gram _ chữ đầu mỗi thành phần (MIX nếu trộn vị) _ số gói.
+            </p>
+          )}
           <FieldError message={errors.sku?.message} />
         </div>
 

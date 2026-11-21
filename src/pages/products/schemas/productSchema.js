@@ -12,7 +12,7 @@ const productSchema = z.object({
     .min(1, "Vui lòng nhập SKU.")
     .min(3, "SKU phải có từ 3 đến 30 ký tự.")
     .max(30, "SKU phải có từ 3 đến 30 ký tự.")
-    .regex(/^[A-Z0-9-]+$/, "Chỉ được dùng chữ hoa (A-Z), số (0-9) và dấu gạch ngang (-)."),
+    .regex(/^[A-Z0-9_-]+$/, "Chỉ được dùng chữ hoa (A-Z), số (0-9), dấu gạch dưới (_) và gạch ngang (-)."),
   // First selected id is the primary category.
   categoryIds: z.array(z.string().uuid()).min(1, "Vui lòng chọn ít nhất 1 danh mục").max(10, "Tối đa 10 danh mục"),
   price: z.preprocess(
@@ -54,6 +54,15 @@ const productSchema = z.object({
   description: z.string().trim().optional().or(z.literal("")),
   imageUrl: z.string().trim().max(1000).optional().or(z.literal("")),
   isActive: z.boolean().default(true),
+});
+
+// Naming standard for new products (docs/01-BA-quy-chuan-ten-va-sku.md): {code}{gram}_{variant}_{pack count}.
+// Edit mode keeps the loose rule because the SKU is read-only there and older SKUs predate it.
+export const SKU_STANDARD = /^[A-Z0-9]+_[A-Z0-9]+_[1-9]\d*$/;
+export const SKU_STANDARD_MESSAGE = "SKU phải theo mẫu MÃ+GRAM_MÃVỊ_SỐGÓI, VD: BOW70_GTD_1.";
+
+export const createProductSchema = productSchema.extend({
+  sku: productSchema.shape.sku.regex(SKU_STANDARD, SKU_STANDARD_MESSAGE),
 });
 
 export default productSchema;

@@ -1,9 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 
-import productSchema from "@/pages/products/schemas/productSchema";
-import productService from "@/pages/products/services/productService";
-import { getCategoryCode } from "@/pages/products/utils/generateSku";
+import productSchema, { createProductSchema } from "@/pages/products/schemas/productSchema";
 import { zodResolver } from "@/lib/zodResolver";
 
 const defaultProductFormValues = {
@@ -44,7 +42,6 @@ export function useProductForm({
   defaultValues,
   onSubmit,
   loading = false,
-  categories = [],
   isEditMode = false,
 }) {
   const normalizedDefaultValues = useMemo(
@@ -57,52 +54,16 @@ export function useProductForm({
   );
 
   const form = useForm({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(isEditMode ? productSchema : createProductSchema),
     defaultValues: normalizedDefaultValues,
     mode: "onTouched",
   });
 
-  const { reset, setValue, getValues, handleSubmit, control, register, formState, watch } = form;
+  const { reset, handleSubmit, control, register, formState } = form;
 
   useEffect(() => {
     reset(normalizedDefaultValues);
   }, [defaultValuesKey, normalizedDefaultValues, reset]);
-
-  const categoryIdsValue = watch("categoryIds");
-  const skuValue = watch("sku");
-
-  // Suggest the next free SKU for the chosen category. The API counts every
-  // product; the unique index still has the last word (409 on submit).
-  useEffect(() => {
-    if (isEditMode || (skuValue && skuValue.trim().length > 0)) {
-      return undefined;
-    }
-
-    // Prefix the SKU from a real category (not a brand) when one is selected.
-    const selected = (categoryIdsValue ?? [])
-      .map((id) => categories.find((category) => category.id === id))
-      .filter(Boolean);
-    const selectedCategory = selected.find((category) => category.type !== "BRAND") ?? selected[0];
-    if (!selectedCategory) {
-      return undefined;
-    }
-
-    const controller = new AbortController();
-
-    productService
-      .getNextSku(getCategoryCode(selectedCategory.name), { signal: controller.signal })
-      .then((suggestedSku) => {
-        // The admin may have typed a SKU while the request was in flight.
-        if (!getValues("sku")?.trim()) {
-          setValue("sku", suggestedSku, { shouldDirty: true, shouldValidate: true });
-        }
-      })
-      .catch(() => {
-        // A suggestion is optional; the admin can always type one.
-      });
-
-    return () => controller.abort();
-  }, [categoryIdsValue, categories, getValues, isEditMode, setValue, skuValue]);
 
   const submitHandler = handleSubmit(async (values) => {
     const normalizedValues = {

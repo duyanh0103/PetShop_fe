@@ -5,6 +5,9 @@ import ProductTable from "./components/ProductTable";
 import ProductPagination from "./components/ProductPagination";
 import ProductDialog from "./components/ProductDialog";
 import ProductDeleteDialog from "./components/ProductDeleteDialog";
+import ProductImportDialog from "./components/ProductImportDialog";
+import productService from "./services/productService";
+import productExcelService from "./services/productExcelService";
 import useProductDialog from "./hooks/useProductDialog";
 import useProducts from "./hooks/useProducts";
 import useProductMutations from "./hooks/useProductMutations";
@@ -14,6 +17,8 @@ import { useToast } from "@/components/ui/toast";
 export default function Products() {
   const [submitting, setSubmitting] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const dialog = useProductDialog();
   const { open, mode, selectedProduct, openCreateDialog, openEditDialog, closeDialog } = dialog;
   const { toast } = useToast();
@@ -81,6 +86,27 @@ export default function Products() {
     }
   };
 
+  // Exports every product, not just the current page (the API caps limit at 100).
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const all = [];
+      for (let exportPage = 1, totalPages = 1; exportPage <= totalPages; exportPage += 1) {
+        const { items, pagination } = await productService.getProducts({ page: exportPage, limit: 100 });
+        all.push(...items);
+        totalPages = pagination.totalPages;
+      }
+      await productExcelService.exportProducts(all);
+    } catch (err) {
+      toast({
+        title: "Không thể xuất Excel.",
+        description: err.response?.data?.message ?? "Vui lòng thử lại.",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleToggleStatus = async (product) => {
     try {
       setTogglingId(product.id);
@@ -106,6 +132,16 @@ export default function Products() {
         onCategoryChange={setSelectedCategory}
         onStatusChange={setIsActive}
         onAddProduct={openCreateDialog}
+        onImport={() => setImportOpen(true)}
+        onExport={handleExport}
+        exporting={exporting}
+      />
+
+      <ProductImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        categories={categories}
+        onImported={refetch}
       />
 
       <ProductDialog

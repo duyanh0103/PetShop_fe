@@ -1,94 +1,56 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { useToast } from "@/components/ui/toast";
 import productExcelService from "../services/productExcelService";
+import productService from "../services/productService";
 
-export default function useProductImport({ products = [], onImportSuccess }) {
+const EMPTY_PREVIEW = { fileName: "", validRows: [], errors: [] };
+
+export default function useProductImport({ categories = [], onImported }) {
   const { toast } = useToast();
-  const [isImporting, setIsImporting] = useState(false);
-  const [previewRows, setPreviewRows] = useState([]);
-  const [previewErrors, setPreviewErrors] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+  const [preview, setPreview] = useState(EMPTY_PREVIEW);
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [result, setResult] = useState(null);
 
-  const resetPreview = () => {
-    setPreviewRows([]);
-    setPreviewErrors([]);
-    setSelectedFile(null);
-    setIsPreviewVisible(false);
+  const reset = () => {
+    setPreview(EMPTY_PREVIEW);
+    setProgress(0);
+    setResult(null);
   };
 
-  const handleFileUpload = async (file) => {
-    if (!file) {
-      return;
-    }
-
+  const handleFile = async (file) => {
+    if (!file) return;
+    reset();
     try {
-      setIsImporting(true);
-      setSelectedFile(file);
-      const parsedRows = await productExcelService.parseExcelFile(file);
-      const { validRows, errors } = productExcelService.validateProducts(parsedRows, products);
-
-      setPreviewRows(validRows);
-      setPreviewErrors(errors);
-      setIsPreviewVisible(true);
+      setBusy(true);
+      const rows = await productExcelService.parseExcelFile(file);
+      setPreview({ fileName: file.name, ...productExcelService.validateRows(rows, categories) });
     } catch (error) {
-      toast({
-        title: "Import failed",
-        description: error?.message || "Unable to parse the selected file.",
-      });
-      resetPreview();
+      toast({ title: "Không đọc được file Excel.", description: error?.message ?? "Vui lòng dùng file mẫu." });
     } finally {
-      setIsImporting(false);
+      setBusy(false);
     }
   };
 
+  // One request per row so each failure (e.g. SKU already in the DB) is reported against its own row.
   const handleImport = async () => {
-    if (!selectedFile) {
-      return;
-    }
-
-    try {
-      setIsImporting(true);
-      const parsedRows = await productExcelService.parseExcelFile(selectedFile);
-      const { validRows, errors } = productExcelService.validateProducts(parsedRows, products);
-
-      if (errors.length > 0) {
-        setPreviewRows(validRows);
-        setPreviewErrors(errors);
-        setIsPreviewVisible(true);
-        toast({ title: "Import preview has errors", description: "Please fix the invalid rows before importing." });
-        return;
+    const failures = [];
+    let created = 0;
+    setBusy(true);
+    for (const [index, row] of preview.validRows.entries()) {
+      try {
+        await productService.createProduct(row.payload);
+        created += 1;
+      } catch (error) {
+        failures.push({ row: row.rowNumber, message: error.response?.data?.message ?? "Lỗi không xác định." });
       }
-
-      if (typeof onImportSuccess === "function") {
-        await onImportSuccess(validRows);
-      }
-
-      toast({ title: `${validRows.length} products imported successfully.` });
-      resetPreview();
-    } catch (error) {
-      toast({ title: "Import failed", description: error?.message || "Unable to import the selected file." });
-    } finally {
-      setIsImporting(false);
+      setProgress(index + 1);
     }
+    setBusy(false);
+    setResult({ created, failures });
+    if (created > 0) await onImported?.();
   };
 
-  const previewSummary = useMemo(() => ({
-    totalRows: previewRows.length + previewErrors.length,
-    validRows: previewRows.length,
-    invalidRows: previewErrors.length,
-  }), [previewErrors.length, previewRows.length]);
-
-  return {
-    isImporting,
-    previewRows,
-    previewErrors,
-    selectedFile,
-    isPreviewVisible,
-    previewSummary,
-    resetPreview,
-    handleFileUpload,
-    handleImport,
-  };
+  return { preview, busy, progress, result, reset, handleFile, handleImport };
 }
